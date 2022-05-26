@@ -251,4 +251,48 @@ HTML을 편리하게 생성하는 뷰 기능
 
 # <서블릿>
 # [프로젝트 생성]
-* jar아닌 war로 그래야 JSP를 사용할 수 있다.
+* jar아닌 war로, 그래야 JSP를 사용할 수 있다.
+
+<br>
+
+# [Hello 서블릿]
+스프링 부트 환경에서 서블릿을 등록하고 사용해보자
+* 서블릿은 WAS를 직접 설치 및 위에 서블릿 코드를 클래스 파일로 빌드해서 올리고, WAS를 실행시켜야 한다.
+* 하지만 스프링 부트의 내장 톰캣 서버를 이용해 설치없이 서블릿 코드를 실행할 수 있다.
+
+### 스프링 부트 서블릿 환경 구성
+* `@ServletComponentScan`
+  * 스프링 부트는 서블릿을 직접 등록해서 사용할 수 있는 Annotation 지원
+  * 어노테이션이 붙은 패키지 및 하위 패키지를 돌며 서블릿을 찾아서 자동으로 등록해줘 실행할 수 있게 한다.
+
+### 서블릿 등록하기 hello.servlet.basic.HelloServlet.java
+  * WAS는 HTTP 요청이 오면 Request, Response 객체를 만들어서 서블릿에게 넘겨준다.
+  * 실제 Request, Response를 찍어보면 WAS서버가 서블릿 표준 스펙을 구현한 것을 알 수 있다.
+  * Content-Body는 개발자 모드의 Response에서(혹은 우클릭 소스보기) 확인할 수 있다.
+
+  * `@WebServlet`: 서블릿 어노테이션
+    * `name`: 서블릿 이름
+    * `urlPatterns`: URL매핑
+    > 위 두개의 이름은 겹치면 안된다.
+    * 서버 띄우고 매핑된 url을 호출하면 서블릿은 service() 메소드를 실행한다.
+
+### HTTP 요청 메시지 로그로 확인하기
+* `application.properties`에 `logging.level.org.apache.coyote.http11=debug` 추가   
+  이후 서버 재시작하고 url을 요청하면 서버가 받은 HTTP 요청 메시지를 확인할 수 있다.
+* 모든 요청을 남기면 성능저하의 원인이 되므로 개발단계에서만 적용하자
+
+### 서블릿 컨테이너의 동작방법
+1. 스프링 부트가 내장 톰켓 서버를 생성함
+   1. 내부의 서블릿 컨테이너를 통해 모든 서블릿을 생성한다. (helloServlet)`
+2. HTTP 요청, HTTP 응답 메시지: 요청을 하면 응답메시지 생성됨
+3. 웹 브라우저가 요청하면, WAS는 HTTP 요청 메시지 기반으로 Request, Response 객체를 생성하고 helloServlet(싱글톤)   
+   을 호출하고, service() 메소드를 실행하며 Request, Response 객체를 넘겨준다.
+4. 필요작업을 수행하고(service()), 혹시 Response에 메시지를 넣게 되면 종료되고 나가면서 WAS서버가 Response정보를 가지고   
+   HTTP 응답 메시지를 만들어서 반환한다.
+5. 웹 브라우저에서 만든 메시지를 확인할 수 있다.
+> Content-Length 및 부가적인 정보들은 웹 애플리케이션 서버가 자동으로 생성해준다.
+
+### Welcome 페이지 추가
+* webapp 경로에 index.html 을 두면 http://localhost:8080 호출시 index.html 페이지가 열린다.
+
+
