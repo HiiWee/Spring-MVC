@@ -334,3 +334,31 @@ HTML을 편리하게 생성하는 뷰 기능
 > 도와주는 객체라는 점이다.   
 > **HTTP 스펙이 제공하는 요청, 응답 메시지 자체를 이해해야 깊이있는 이해를 할 수 있다.**
 
+<br>
+
+## [HttpServletRequest - 기본 사용법]
+`hello/servlet/basic/request/RequestHeaderServlet.java` 코드 확인
+
+> **참고**: 로컬 테스트는 IPv6 정보, IPv4 정보를 보고 싶다면 다음 옵션을 VM options에 추가   
+> `-Djava.net.preferIpv4Stack=true`
+> 
+> HttpServletRequest를 통해 HTTP 메시지의 start-line, header 정보 조회 방법을 알아봄
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
