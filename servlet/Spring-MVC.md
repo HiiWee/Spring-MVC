@@ -363,8 +363,30 @@ HTTP 요청 메시지를 통해 클라이언트에서 서버로 데이터를 전
 
 > Content-Type은 Body에 대한 정보에 대해서 설명함(어떤 스타일의 데이터인지)
 
+<br>
 
+## [HTTP 요청 데이터 - GET 쿼리 파라미터]
+전달 데이터
+* username=hello
+* age=20
 
+위의 데이터를 메시지 바디 없이, URL의 **쿼리 파라미터**를 사용해서 데이터를 전달하자.   
+쿼리 파라미터의 시작은 `?`, 추가 파라미터는 `&`로 구분한다.
+* 만드려는 URL
+  * /request-param?username=hello&age=20
+
+HttpServletRequest가 제공하는 쿼리 파라미터 조회 메소드
+
+```java
+request.getParameter("username"); // 단일 파라미터 조회
+request.getParameterNames(); // 파라미터 이름들 모두 조회
+request.getParameterMap(); // 파라미터를 Map으로 조회
+request.getParameterValues("username"); // 복수 파라미터 조회
+```
+
+**복수 파라미터에서 단일 파라미터 조회**   
+`request.getParameter()` --> 하나의 파라미터 이름에 대해 하나의 값만 있을 때 사용해야 함   
+`request.getParameterValues()` --> 하나의 파라미터 이름에 대해 여러 값이 있을때 모든 값을 반환함   
 
 
 
