@@ -472,4 +472,18 @@ HTTP 응답 메시지는 주로 다음 내용을 담아 전달
 * HTML 응답
 * HTTP API - MessageBody JSON 응답
 
-> HTTP 응답으로 HTML을 반환할 때는 content-type을 text/html 로 지정해야 한다
+HTTP 응답으로 HTML을 반환할 때는 content-type을 `text/html` 로 지정해야 한다
+
+<br>
+
+## [HTTP 응답 데이터 - API JSON]
+HTTP 응답으로 JSON을 반환할 때 `Content-Type`을 `application/json`으로 지정해야함.    
+Jackson 라이브러리가 제공하는 `ObjectMapper.writeValueAsString()`을 사용해 객체를 JSON문자로 변경한다.
+
+> **참고**   
+> `application/json`은 스펙상 utf-8 형식을 사용하게 정의됨   
+> 따라서 charset=utf-8 같은 추가 파라미터를 지원하지 않는다.   
+> 즉 위의 결과와 같이 `applicaiton/json;charset=utf-8`에서 charset은 의미가 없다.  
+> 
+> response.getWriter()는 추가 파라미터를 자동으로 추가하지만,   
+> response.getOutputStream()으로 출력하면 위와 같은 문제가 없다.
