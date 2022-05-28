@@ -451,3 +451,14 @@ JSON 라이브러리인 `jackson`을 이용해 파싱한 값을 자바 객체를
 > 
 > 실제로 Postman을 통해 Form데이터를 전송하면 messgae body에 담겨옴.   
 > 하지만 json형식이 아니므로 파싱은 불가능하다.
+
+<br>
+
+## [HttpServletResponse - 기본 사용법]
+**역할: HTTP 응답 메시지 생성**
+* HTTP 응답 코드 지정
+* 헤더 생성
+* 바디 생성
+
+**편의 기능 제공**
+* Content-Type(헤더 편리하게 지정), 쿠키(편리하게 생성), Redirect(300대 리다이렉트 쉽게 세팅가능)
