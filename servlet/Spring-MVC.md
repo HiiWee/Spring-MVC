@@ -462,3 +462,14 @@ JSON 라이브러리인 `jackson`을 이용해 파싱한 값을 자바 객체를
 
 **편의 기능 제공**
 * Content-Type(헤더 편리하게 지정), 쿠키(편리하게 생성), Redirect(300대 리다이렉트 쉽게 세팅가능)
+
+<br>
+
+## [HTTP 응답 데이터 - 단순 텍스트, HTML]
+HTTP 응답 메시지는 주로 다음 내용을 담아 전달
+* 단순 텍스트 응답
+  * 앞에서 살펴봄(`writer.print("ok);`)
+* HTML 응답
+* HTTP API - MessageBody JSON 응답
+
+> HTTP 응답으로 HTML을 반환할 때는 content-type을 text/html 로 지정해야 한다
