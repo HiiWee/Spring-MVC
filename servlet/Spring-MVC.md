@@ -388,11 +388,29 @@ request.getParameterValues("username"); // 복수 파라미터 조회
 `request.getParameter()` --> 하나의 파라미터 이름에 대해 하나의 값만 있을 때 사용해야 함   
 `request.getParameterValues()` --> 하나의 파라미터 이름에 대해 여러 값이 있을때 모든 값을 반환함   
 
+<br>
 
+## [HTTP 요청 데이터 - POST HTML Form]
+HTML Form을 이용해 클라이언트에서 서버로 데이터를 전송   
+회원가입, 상품 주문 등에서 사용되는 방식이다.   
 
+POST의 HTML Form을 전송하면 웹 브라우저는 다음과 같이 HTTP 메시지를 만듦
+* request URL: http://localhost:8080/request-param
+* **Content-Type:** `application/x-www-form-urlencoded`
+* **message body:** `username=hello&age=20`
 
+`application/x-www-form-urlencoded`형식과 GET의 쿼리 파라미터 형식은 동일하다.   
+따라서 기존의 **쿼리 파라미터 조회 메서드를 그대로 활용할 수 있다.**   
+이 둘의 차이는 클라이언트에서만 나타나고, 서버에서는 둘의 형식이 동일하기 때문
 
-
+> **참고**
+> **content-type은 HTTP 메시지 바디의 데이터 형식을 지정한다.**   
+> `GET URL 쿼리 파라미터 형식`: HTTP 메시지 바디를 사용하지 않으므로 content-type 없음   
+> `POST HTML Form 형식`: HTTP 메시지 바디에 데이터를 포함해서 보냄 따라서 데이터의 형식을 content-type으로 꼭     
+> 지정해야한다. 이렇게 폼으로 데이터를 전송하는 형식을 applicaiton/x-www-form-urlencoded라 함
+> 
+> <br>
+> HTML Form 대신 Postman으로 테스트하면 좀 더 간편하게 테스트할 수 있다.
 
 
 
