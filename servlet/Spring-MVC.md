@@ -535,3 +535,36 @@ MemberSaveServlet 은 다음 순서로 동작한다.
 
 > **참고**   
 > Thymeleaf가 Spring과의 통합을 잘 지원해주므로 적절하다.
+
+<br>
+
+## [JSP로 회원 관리 웹 애플리케이션 만들기]
+**JSP 라이브러리 추가**
+```java
+//JSP 추가 시작
+    implementation 'org.apache.tomcat.embed:tomcat-embed-jasper'
+    implementation 'javax.servlet:jstl'
+//JSP 추가 끝
+```
+* JSP는 내부적으로 서블릿 코드로 변환된다.
+  * 따라서 이전 시간에 서블릿으로 만들었던 코드들과 비슷한 모습을 보인다.
+
+* JSP는 자바 코드를 그대로 다 사용할 수 있다.
+  * `<%@ page import="hello.servlet.domain.member.MemberRepository" %>`   
+    * 자바의 import 문과 같다. 
+  * `<% ~~ %>`
+    * 이 부분에는 자바 코드를 입력할 수 있다. 
+  * `<%= ~~ %>`
+    * 이 부분에는 자바 코드를 출력할 수 있다.
+
+  > 위의 구문을 이용해 HTML중간에 자바코드를 삽입할 수 있다.
+
+**서블릿, JSP의 한계점**   
+서블릿은 뷰 화면에 대한 HTML을 만드는 과정이 복잡함   
+이를 JSP를 이용해 뷰 화면을 깔끔하게 만들었고, 중간에 자바 코드를 끼워넣을 수 있다.   
+
+하지만 회원의 정보를 저장, 가져오기 등과 같은 비즈니스 로직은 상위에 존재하고,   
+하위 HTML은 보여주기 위한 뷰의 영역이다.   
+**즉 비즈니스 로직과 뷰의 화면을 분리하는것에 필요성을 느낀다.**
+* **MVC 패턴의 등장**
+  * 비즈니스 로직은 서블릿 처럼 다른곳에서 처리하고, JSP는 HTML로 화면을 그리는(view) 역할에만 집중
