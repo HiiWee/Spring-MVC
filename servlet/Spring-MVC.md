@@ -516,3 +516,22 @@ Jackson 라이브러리가 제공하는 `ObjectMapper.writeValueAsString()`을 �
 * 회원 목록 조회
 
 스프링 없는 순수 자바, 서블릿 만으로 구성되는 간단한 코드
+
+<br>
+
+## [서블릿으로 회원 관리 웹 애플리케이션 만들기]
+가장 먼저 서블릿으로 회원 등록 HTML 폼을 제공해보자
+
+MemberSaveServlet 은 다음 순서로 동작한다.
+1. 파라미터를 조회해서 Member 객체를 만든다.
+2. Member 객체를 MemberRepository를 통해서 저장한다.
+3. Member 객체를 사용해서 결과 화면용 HTML을 동적으로 만들어서 응답한다.
+
+**템플릿 엔진의 등장**   
+소스코드를 살펴보면 (hello/servlet/web/servlet.*) 동적인 HTML 코드를 서블릿으로 만드는 과정은   
+상당히 힘들다는것을 알 수 있다.   
+반면에 템플릿 엔진을 이용하면 HTML 문서에 동적으로 변경해야 하는 부분만 자바 코드를 넣을 수 있고, 훨씬 편리하다.   
+템플릿 엔진은 대표적으로 JSP, Thymeleaf, Freemarker, Velocity등이 존재한다.   
+
+> **참고**   
+> Thymeleaf가 Spring과의 통합을 잘 지원해주므로 적절하다.
