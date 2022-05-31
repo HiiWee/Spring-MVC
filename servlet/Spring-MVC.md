@@ -594,3 +594,43 @@ MVC 패턴은 하나의 서블릿, JSP로 처리하던 것을 컨트롤러와 �
 > 그렇지 않다면 서비스 계층을 호출해 비즈니스 로직을 실행한다.(주문, 결제 등)
 > 이후 컨트롤러는 결과를 받아서 모델에 비즈니스 로직의 결과(데이터)를 담고 뷰에 넘김.
 > 뷰는 모델을 이용해 화면을 결과화면 생성
+
+<br>
+
+## [MVC 패턴 - 적용]
+서블릿 - Controller   
+JSP - View
+Model - HttpServletRequest 객체 이용
+* `request.setAttribute(...)`, `request.getAttribute(...)`
+
+### **hello/servlet/web/servletmvc/MvcMemberFormServlet.java 설명**   
+`WEB-INF`   
+* 경로안에 JSP가 존재하면 외부에서 JSP를 직접호출할 수 있음, 하지만 항상 컨트롤러를 통해 JSP를 호출해야 하므로   
+  이곳에 파일을 두면 외부에서의 접근을 막을 수 있다.
+
+`dispatcher.forward()`: 서버 내부에서 다시 호출이 발생한다. 주로 다른 서블릿, JSP로 이동할때 사용
+* **Redirect 와 forward**
+  * Redirect는 클라이언트에 응답이 나간 후, 클라이언트가 redirect경로로 다시 요청한다.   
+    이는 클라이언트가 인지할 수 있고, 실제 URL도 변경이 발생
+  * forward는 서버 내부에서 일어나는 호출이므로 클라이언트가 인지하지 못함, 따라서 URL도 변경되지 않음
+
+### **main/webapp/WEB-INF/views/new-form.jsp 설명**   
+action의 위치를 상대경로로 지정했을때 생기는 일   
+`URL 경로: http://[현재URL].../.../[상대경로 추가]`   
+* 위와 같이 현재 URL의 계층 경로 + 상대경로가 호출된다.
+* 반면에 절대경로는 기본 주소 + 절대경로가 직접 호출됨,   
+> 절대경로를 추천하지만 현재 이 폼은 재사용을 할것이므로 다른 곳에서의 활용을 위해 상대경로로 작성
+
+### **main/webapp/WEB-INF/views/save-result.jsp 설명** 
+EL 태그를 이용해 ((Member)request.getAttribute("Member")).getXxx() 코드를 쉽게 호출할 수 있다.   
+**${member.xxx}**
+
+또한 request객체를 Model로 이용하여 값을 전달하고 받는다.
+
+### **main/webapp/WEB-INF/views/members.jsp 설명**
+JSTL(taglib) 태그를 이용해 리스트 객체를 반복문과 함꼐 쉽게 화면에 출력할 수 있다.
+
+> **알아두자**: 모든 요청은 항상 컨트롤러가 받아서 이후 비즈니스 로직 처리후 화면에 결과를 렌더링함   
+> 심지어 로직이 없어도 컨트롤러를 꼭 거친 후 뷰로 간다.(JSP를 WEB-INF/ 아래에 두는 이유)
+> 
+> **MVC 덕분에 컨트롤러 로직과 뷰 로직을 확실하게 분리할 수 있다. 또한 변경 사이클을 달리하여 관리할 수 있다.**
