@@ -705,3 +705,29 @@ view로 이동하는 코드가 항상 중복 호출되어야 함, 메서드로 �
 > **TIP** : 구조적인 것을 개선할 때는 구조적인것만 개선하고 기존 코드는 최대한 유지   
 > 구조 변경 후 문제가 없으면 이 떄 세세한 부분을 개선하는것이 좋다.   
 > `구조 개선 - 커밋 - 배포 - 세세한 변경 - 커밋 - 배포`
+
+<br>
+
+## [View 분리 - v2]
+프론트 컨트롤러를 도입했지만, 모든 컨트롤러에서 뷰로 이동하는 부분에 중복이 존재함.   
+`viewPath, RequestDispatcher, forward 등`   
+이를 해결하기 위한 별도로 뷰를 처리하는 객체를 만들자
+
+**뷰 처리 객체의 동작 - HTTP 요청이 들어올때**   
+1. Front Controller가 요청을 받음
+2. YRL 매핑 정보에서 컨트롤러 조회
+3. 컨트롤러 호출
+4. **MyView 객체 반환**
+5. render() 호출
+6. JSP Forward
+
+* 이전 v1 에서는 컨트롤러가 직접 forward를 해주었으나, 이젠 MyView라는 객체를 다시 Front Controller에 반환한다.   
+* v1, v2 등 범용적으로 사용하므로 `hello/servlet/web/frontcontroller/.`위치에 생성한다.
+
+### **ControllerV2의 도입**   
+`ControllerV2.process()`의 반환타입이 MyView 이므로 프론트 컨트롤러는 호출 결과로 `MyView`를 반환 받는다.   
+이후 `MyView.render()`를 호출하면 forward 로직을 수행해 JSP가 실행됨
+> **TIP:** 만약 JSP 말고 다른 템플릿을 렌더링 해야하는 상황이 발생하면 MyView 클래스도 인터페이스화 시켜서 이용하면 된다.
+
+### **또다시 개선해야 할 부분**
+> 이제 Model이라는 개념을 추가하고, process()에서 강제로 Request, Response 객체를 받아야 하는 부분을 수정해보자
