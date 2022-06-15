@@ -822,3 +822,32 @@ HTTP 요청이 들어옴
 > **[정리]**   
 > V3의 컨트롤러들은 모두 ModelView를 반환하므로, ModelView를 반환하는 어댑터 `ControllerV3HandlerAdapter`와   
 > 호환이 잘 되어 변환로직이 단순하다.
+
+<br>
+
+## [유연한 컨트롤러2 - v5]
+`FrontControllerServletV5` 에 `ControllerV4` 기능도 추가해보자.
+
+**핵심 코드**
+```java
+    String viewName = controller.process(paramMap, model);
+    
+    ModelView mv = new ModelView(viewName);
+    mv.setModel(model);
+    
+    return mv;
+```
+* 어댑터 패턴의 역할이 잘 드러나는 부분이다.
+  * 기존 v4컨트롤러는 view의 논리적인 주소값만 반환했지만 이를 `어댑터가 공통된 처리`를 위해 ModelView에 담아   
+    ModelView 객체를 반환하여 실제 FrontControllerServletV5에선 이와같은 변환을 신경쓰지 않도록 할 수 있다.
+
+> **[정리]**   
+> `FrontControllerServletV5`에서 설정하는 부분(생성자에서 이루어짐)만 밖으로 빼내어 따로 DI를 하게 되면 완벽하게 OCP를 지킬 수 있다.   
+> 즉 기능을 확장하더라도 코드를 변경 할 필요가 없다.  
+> 
+> 지금 만들어온 MVC 프레임워크들은 역할과 구현이 잘 분리되어 있다.   
+> 인터페이스 기반으로 놓아두고 변경하고 싶은 부분만 구현체를 꽂아서 넣으면 됨
+> 
+> 이것이 스프링 MVC가 제공해주는 기능들이다.
+> 스프링은 과거 인터페이스 기반으로 만들어오다 어노테이션을 도입하면서 @Controller만 이용하더라도   
+> 기존의 핸들러 어댑터를 이용할 수 있게 되었다.
