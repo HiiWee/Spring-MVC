@@ -1047,3 +1047,54 @@ HandlerAdapter - `HttpRequestHandlerAdapter`
 (`RequestMappingHandlerMapping`, `RequestMappingHandlerAdapter`)   
 `@RequestMapping`의 앞글자를 따서 만든 이름, 스프링에서 주로 사용하는 애노테이션 기반의 컨트롤러를 지원하는   
 매핑과 어댑터이다. 거의 대부분 이것을 사용
+
+
+## [뷰 리졸버]
+기존 OldController.java에서 return 값을 `return new ModelAndView("new-form");`으로 설정하고 url에서 해당 핸들러(컨트롤러)
+의 url을 입력하면 아직 뷰 리졸버가 없으므로 오류가 발생한다. 하지만 콘솔에 컨트롤러가 호출됐다는 것을 알 수 있다.
+
+이후 `application.properties`에서 아래의 뷰 리졸버 설정을 추가하고 다시 실행하면 정상작동한다.
+어떻게 동작할 수 있을까?
+```
+spring.mvc.view.prefix=/WEB-INF/views/
+spring.mvc.view.suffix=.jsp
+```
+
+**뷰 리졸버 - InternalResourceViewResolver**   
+스프링 부트는 `InternalResourceViewResolver`라는 뷰 리졸버를 자동으로 등록하는데 `application.properties`에 등록한
+prefix, suffix 설정 정보를 사용해서 등록하게 된다.   
+(전체 경로를 ModelAndView 객체에 담고 반환하면 동작하지만 권장하지 않는 방법이다.)
+
+<br>
+
+### **뷰 리졸버의 동작 방식**
+
+**스프링 부트가 자동 등록하는 뷰 리졸버**
+```
+1 = BeanNameViewResolver            : 빈 이름으로 뷰를 찾아서 반환함 (액셀 파일 생성 등에서 사용됨)
+2 = InternalResourceViewResolver   : JSP를 처리할 수 있는 뷰를 반환한다.(InternalResourceView)
+```
+**1. 핸들러 어댑터 호출**   
+핸들러 어댑터를 통해 `new-form`이라는 논리적 뷰 이름 받음
+
+**2. ViewResolver 호출**
+* 논리적 뷰 이름으로 `viewResolver`를 순서대로 호출함
+* 빈 이름으로 뷰를 반환하지 않았으므로 2순위의 `InternalResourceViewResolver`가 호출
+
+**3. InternalResourceViewResolver**   
+InternalResourceViewResolver를 반환함   
+(뷰가 인터페이스화 되어있으므로 JSP 포워드의 기능을 하는 view를 반환 (MyView와 비슷))
+
+**4. 뷰 - InternalResourceView**   
+`InternalResourceView`는 JSP처럼 포워드 `forward()`를 호출해서 처리할 수 있는 경우에 사용된다.
+
+**5. view.render()**   
+view.render()가 호출되면 뷰는 forward()를 사용해 new-form.jsp를 실행한다.
+
+> **참고**   
+> 다른 뷰는 실제 뷰를 렌더링 하지만, JSP의 경우 forward()를 통해 해당 JSP로 이동해야 렌더링이 된다.   
+> JSP제외 다른 뷰 템플릿은 포워드 과정없이 바로 렌더링 된다.
+> 
+> Thymeleaf 뷰 템플릿을 사용하면 `ThymeleafViewResolver`를 등록해야 한다. 최근에는 라이브러리만 추가하면
+> 스프링 부트가 알아서 처리해줌
+
