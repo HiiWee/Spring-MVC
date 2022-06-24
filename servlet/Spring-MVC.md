@@ -1098,3 +1098,58 @@ view.render()가 호출되면 뷰는 forward()를 사용해 new-form.jsp를 실�
 > Thymeleaf 뷰 템플릿을 사용하면 `ThymeleafViewResolver`를 등록해야 한다. 최근에는 라이브러리만 추가하면
 > 스프링 부트가 알아서 처리해줌
 
+<br>
+
+## [스프링 MVC - 시작하기]
+@RequestMapping이 스프링 MVC에서 등장하면서 MVC의 핵심이 되었다.
+`@RequestMapping`을 사용하려면 먼저 핸들러를 조회해 매핑정보를 찾고, 이후 해당 매핑에 맞는 어댑터를 찾아서
+해당 핸들러를 지원하는지 확인하고 실제 핸들러를 실행하게 된다.
+* `RequestMappingHandlerMapping`
+* `RequestMappingHandlerAdapter`
+
+위 두개의 핸들러 매핑과 핸들러 어댑터는 가장 많이 사용되고, 가장 우선순위가 높다.   
+이는 애노테이션 기반의 컨트롤러를 지원하는 핸들러 매핑과 어댑터이다.
+
+지금까지 만든 프레임워크의 컨트롤러를 `@RequestMapping`기반의 스프링 MVC 컨트롤러로 변경해보자
+
+### **SpringMember...ControllerV1**
+* `@Controller`
+  * 스프링이 자동으로 스프링 빈으로 등록한다.(내부에 @Component존재 따라서 컴포넌트 스캔 대상)
+  * 스프링 MVC에서 애노테이션 기반 컨트롤러로 인식한다.
+  * 2가지 일을함 컴포넌트 스캔의 대상, `RequestMappingHandlerMapping`에서 사용됨
+* `@RequestMapping`
+  * 요청 정보를 매핑함, 해당 URL이 호출되면 이것이 붙은 메서드 호출됨, 애노테이션 기반 동작으로, 메서드의
+    이름은 임의로 지으면 됨
+
+> `RequestMappingHandlerMapping`이 내가 인식할 수 있는 핸들러인지 찾는 방법은 스프링 빈 중에서 `@RequestMapping`
+> 혹은 `@Controller`가 클래스 레벨에 붙어있는 경우에 매핑 정보로 인식한다.   
+
+* 기존의 @Controller를 -> @Component, @RequestMapping으로 클래스 레벨에 붙여주면 동일하게 동작한다. 
+  이유는 아래와 같다.
+
+```java
+실제 RequestMappingHandlerMapping의 isHandler() 메소드를 살펴보면 @Controller 혹은 @RequestMapping 애노테이션이
+클래스 레벨에 있으면 해당 매핑 클래스가 처리할 수 있는 핸들러로 인식된다.
+	/**
+	 * {@inheritDoc}
+	 * <p>Expects a handler to have either a type-level @{@link Controller}
+	 * annotation or a type-level @{@link RequestMapping} annotation.
+	 */
+	@Override
+	protected boolean isHandler(Class<?> beanType) {
+		return (AnnotatedElementUtils.hasAnnotation(beanType, Controller.class) ||
+				AnnotatedElementUtils.hasAnnotation(beanType, RequestMapping.class));
+	}
+
+```
+* 또는 컴포넌트 스캔 없이 스프링 빈으로 직접 등록해도 동작한다.   
+  하지만 굳이 불편하게 사용하기 보단 @Controller만 사용하는것이 깔끔하다.
+```java
+    @Bean
+    SpringMemberFormControllerV1 springMemberFormControllerV1() {
+        return new SpringMemberFormControllerV1();
+}
+```
+
+**SpringMember...ControllerV1**에서 `mv.addObject("member", member)`는 스프링이 제공하는 `ModelAndView` 클래스를 이용해
+Model 데이터를 추가할 때 사용된다. 이후 뷰를 렌더링시 활용된다.
