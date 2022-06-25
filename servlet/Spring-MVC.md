@@ -1153,3 +1153,22 @@ view.render()가 호출되면 뷰는 forward()를 사용해 new-form.jsp를 실�
 
 **SpringMember...ControllerV1**에서 `mv.addObject("member", member)`는 스프링이 제공하는 `ModelAndView` 클래스를 이용해
 Model 데이터를 추가할 때 사용된다. 이후 뷰를 렌더링시 활용된다.
+
+
+## [스프링 MVC - 컨트롤러 통합]
+`@RequestMapping`은 클래스 단위가 아닌 메서드 단위로 적용이 된다. 따라서 컨트롤러 클래스를 유연하게 하나로 통합할 수 있다.
+다만 어느정도 연관성이 있는 컨트롤러끼리 묶어주자.
+
+**URL의 조합**   
+컨트롤러 클래스를 통합하는것을 더해 조합을 할 수 도 있음   
+클래스 레벨에서 중복되는 url을 `@RequestMapping("...")`하고, 논리적 URL만 메소드에 `@RequestMapping("...")`한다.
+리스트를 조회하는 members()의 경우 클래스에 매핑된 url이 곧 메소드의 url과 동일하다
+이럴때는 메소드에 `@RequestMapping`만 달아주자.
+* `클래스 레벨`: @RequestMapping("/springmvc/v2/members")
+  * `메서드 레벨`: @RequestMapping("/new-form") /springmvc/v2/members/new-form
+  * `메서드 레벨`: @RequestMapping("/save") /springmvc/v2/members/save
+  * `메서드 레벨`: @RequestMapping /springmvc/v2/members
+  
+**정리**   
+다음 시간에는 항상 ModelAndView를 반환해야 하는 컨트롤러들을 뷰의 이름만 반환하는
+좀 더 실용적인 컨트롤러(가장 많이 사용함)로 변경해보자(V4)
