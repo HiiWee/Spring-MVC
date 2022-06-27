@@ -1172,3 +1172,28 @@ Model 데이터를 추가할 때 사용된다. 이후 뷰를 렌더링시 활용
 **정리**   
 다음 시간에는 항상 ModelAndView를 반환해야 하는 컨트롤러들을 뷰의 이름만 반환하는
 좀 더 실용적인 컨트롤러(가장 많이 사용함)로 변경해보자(V4)
+
+<br>
+
+## [스프링 MVC - 실용적인 방식]
+커스텀 MVC 프레임워크에서 v3 방식은 ModelView의 직접 반환이 불편했었다. 이후 v4를 통해 실용적으로 개선하기도 했다.
+
+기존 SpringMemberControllerV2 방식을 v3 방식처럼 개선해보자
+
+### **SpringMemberControllerV3**   
+스프링 애노테이션 기반의 컨트롤러는 ModelAndView를 반환해도 되고, 문자(논리주소)를 반환해도 된다.
+
+**매개변수를 통해 Model 받기**   
+* `save()`, `members()`에서 Model을 파라미터로 받는것을 알 수 있다.
+
+**@RequestParam 사용**   
+* 스프링 MVC에서 요청 파라미터를 `@RequestParam`으로 받아옴   
+* `@RequestParam("username") == request.getParameter("username");`과 거의 같다고 생각하면 된다.   
+* 어노테이션을 이용하면 자동으로 해당 파라미터를 형변환하여 전달 해줄 수 있다.   
+* `Get 쿼리 파라미터`, `POST Form`방식 모두 지원(**둘 다 요청 파라미터**)
+
+**@RequestMapping -> @GetMapping, @PostMapping(애노테이션을 조합한 애노테이션)**
+* @RequestMapping은 URL 매칭 + HTTP Method의 구분까지 해줄 수 있다.   
+* `@RequestMapping(value = "/new-form", method = RequestMethod.GET)` 하지만 너무 길다는 불편함으로 아래와 같이 사용 가능하다.
+* @GetMapping, @PostMapping (외에도 Put, Delete, Patch 전용 애노테이션 존재)
+이들은 내부에 @RequestMapping을 가지고 있어서 동일한 동작을 하지만 HTTP Method의 구분을 하는 추가 기능까지 존재
