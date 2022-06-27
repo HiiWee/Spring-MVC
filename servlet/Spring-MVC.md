@@ -1197,3 +1197,20 @@ Model 데이터를 추가할 때 사용된다. 이후 뷰를 렌더링시 활용
 * `@RequestMapping(value = "/new-form", method = RequestMethod.GET)` 하지만 너무 길다는 불편함으로 아래와 같이 사용 가능하다.
 * @GetMapping, @PostMapping (외에도 Put, Delete, Patch 전용 애노테이션 존재)
 이들은 내부에 @RequestMapping을 가지고 있어서 동일한 동작을 하지만 HTTP Method의 구분을 하는 추가 기능까지 존재
+
+<br>
+
+## [정리]
+**핵심**   
+스프링 MVC에서 HTTP 요청이 왔을때 MVC 프레임워크가 어떻게 동작했는지 라이프사이클 잘 알기   
+HandlerMapping, HandlerAdapter는 RequestMapping 방식이 거의 표준
+
+**뷰 리졸버**   
+뷰리졸버는 application.properties 에서 설정 (JSP는 InternalResourceViewResolver)
+
+**핸들러 매핑, 어댑터**   
+핸들러 매핑은 @RequestMapping을 매핑하는 RequestMappingHandlerMapping 클래스가 등장하면서 메소드 기준으로   
+핸들러 매핑 정보를 관리한다.
+
+메서드 단위로 RequestMapping 정보를 구할 수 있으므로, 메서드 단위로 매핑 정보를 관리하는 별도의 객체로 관리된다.
+(RequestMappingHandlerMapping, RequestMappingHandlerAdapter 확인해보기)
