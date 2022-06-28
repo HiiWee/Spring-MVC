@@ -1214,3 +1214,14 @@ HandlerMapping, HandlerAdapter는 RequestMapping 방식이 거의 표준
 
 메서드 단위로 RequestMapping 정보를 구할 수 있으므로, 메서드 단위로 매핑 정보를 관리하는 별도의 객체로 관리된다.
 (RequestMappingHandlerMapping, RequestMappingHandlerAdapter 확인해보기)
+
+<br><br>
+
+# <스프링 MVC - 기본 기능>
+## [프로젝트 생성]
+프로젝트 생성시 Jar를 사용하는 이유(War 대신)   
+JSP를 사용하지 않고, Jar를 사용하면 항상 내장 서버(톰캣)을 사용하고 `webapp`경로도 사용하지 않음 즉 내장서버 사용에
+최적화 되어 있는 기능이다. War를 사용하면 내장 서버도 사용가능 하지만, 주로 외부 서버에 배포하는 목적용
+
+스프링 부트 Jar 사용시 `/resources/static/`위치에 `index.html` 파일을 두면 Welcome 페이지로 처리해준다.   
+(스프링 부트가 지원하는 정적 컨텐츠 위치에 /index.html이 있으면 된다.)
