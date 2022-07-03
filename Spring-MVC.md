@@ -1291,3 +1291,135 @@ logging.level.hello.springmvc=debug
 * 콘솔에만 출력하는 것이 아니라, 파일이나 네트워크 등, 로그를 별도의 위치에 남길 수 있다. 특히 파일로 남길때는
   일별, 특정 용량에 따라 로그를 분할하는 것도 가능
 * 성능도 일반 System.out보다 좋다. (내부 버퍼링, 멀티 쓰레드 등) 따라서 실무에선 꼭 사용함
+
+<br>
+
+## [요청 매핑]
+
+**매핑 정보!**
+* `@RequestController`
+  * `@Controller`는 반환 값이 String이면 뷰 이름으로 인식, 따라서 뷰를 찾고 렌더링
+  * `@RestController`는 반환 값으로 뷰가 아닌 HTTP 메시지 바디에 직접 입력 (@ResponseBody관련)
+* `@RequestMapping("hello-basic")`
+  * `/hello-basic` URL 호출이 오면 해당 메서드가 실행되도록 매핑
+  * 대부분의 속성을 `배열`로 제공하므로 다중 설정 가능 -> `{"/hello-basic", "/hello-go"}`
+
+<br>
+
+**둘 다 허용**   
+아래의 두 가지 요청은 다른 URL임, 하지만 스프링은 같은 요청으로 매핑
+* 매핑: `/hello-basic`
+* URL 요청: `/hello-basic`, `/hello-basic/`
+
+<br>
+
+**HTTP 메서드**   
+@RequestMapping에 method속성으로 HTTP 메서드를 지정하지 않으면 HTTP 메서드와 무관하게 호출됨   
+> 모두허용 GET, HEAD, POST, PUT, PATCH, DELETE   
+> @RestController에서 method를 지정하고 해당 메소드가 아닌 다른 메소드로 호출하면 JSON타입으로 오류가 반환됨
+> --> @RestController의 특징
+
+<br>
+
+**HTTP 메서드 축약**
+* 편리한 축약 애노테이션
+* @GetMapping
+* @PostMapping
+* @PutMapping
+* @DeleteMapping
+* @PatchMapping
+
+<br>
+
+### **PathVariable(경로 변수) 사용**
+URL자체에 값이 들어있다.   
+최근 HTTP API는 다음과 같이 리소스 경로에 식별자를 넣는 스타일을 선호
+* /mapping/userA
+* /users/1
+* @RequestMapping 은 URL 경로를 템플릿화 할 수 있다. (`@GetMapping("/mapping/{userId}")`)   
+  @PathVariable을 사용하면 매칭되는 부분을 편리하게 조회 가능
+* @PathVariable의 이름과 파라미터 이름이 동일하면 생략가능
+  * `public String mappingPath(@PathVariable("userId") String data)` 생략 전
+  * `public String mappingPath(@PathVariable String userId)` 생략 후
+
+<br>
+
+**PathVariable 다중 사용**
+```java
+@GetMapping("/mapping/users/{userId}/orders/{orderId}")
+public String mappingPath(@PathVariable String userId, @PathVariable Long orderId)
+```
+
+<br>
+
+**특정 파라미터 조건 매핑**
+```java
+/*
+* 파라미터로 추가 매핑
+* params="mode",
+* params="!mode"
+* params="mode=debug"
+* params="mode!=debug" (! = )
+* params = {"mode=debug","data=good"}
+* /
+@GetMapping(value = "/mapping-param", params = "mode=debug")
+```
+> 파라미터로 조건을 넣은 값이 있어야 요청이 수행된다.
+
+<br>
+
+**특정 헤더로 조건 매핑**
+```java
+/**
+* 특정 헤더로 추가 매핑
+* headers="mode",
+* headers="!mode"
+* headers="mode=debug"
+* headers="mode!=debug" (! = )
+* /
+@GetMapping(value = "/mapping-header", headers = "mode=debug")
+```
+> 특정 헤더에 조건을 지정한 헤더 값이 있어야 호출된다.(HTTP 헤더 사용)
+
+<br>
+
+**미디어 타입 조건 매핑-HTTP 요청 Content-Type, consume**   
+```java
+/**
+* Content-Type 헤더 기반 추가 매핑 Media Type
+* consumes="application/json"
+* consumes="!application/json"
+* consumes="application/*"
+* consumes="*\/*"
+* MediaType.APPLICATION_JSON_VALUE
+  */
+  @PostMapping(value = "/mapping-consume", consumes = MediaType.APPLICATION_JSON_VALUE)
+  ```
+이 방법은 특정 헤더로 조건 매핑에서 Content-Type을 작성하고 직접 넣어줘도 된다.   
+하지만 이걸 사용하면 몇가지 부가적인 기능이 따라온다.   
+Content-Type에 따라 서로 다른 것을 호출할때 분류할 수 있다. 이 경우 headers가 아닌 `consume`을 사용하자 (스프링 내부 처리 지원)
+* `consume의 의미`: 컨트롤러 입장에선 요청의 Content-Type 정보를 소비하는 입장이므로 consume이라 함
+
+<br>
+
+**미디어 타입 조건 매핑 - HTTP 요청 Accept(`나는 이런 정보를 받아들일 수 있어`), produce**   
+```java
+/**
+ * Accept 헤더 기반 Media Type
+ * produces = "text/html"
+ * produces = "!text/html"
+ * produces = "text/*"
+ * produces = "*\/*"
+ */
+@PostMapping(value = "/mapping-produce", produces = MediaType.TEXT_HTML_VALUE)
+```
+produce: 컨트롤러가 생산해내는 Content-Type이 이것이어야함    
+HTTP 요청의 Accept 헤더를 기반으로 미디어 타입으로 매핑한다. 만약 맞지 않으면 HTTP 406 상태코드(Not Acceptable) 반환
+
+
+### **Accept, Content-Type 정리**
+**Accept**는 클라이언트가 선호하는 표현을 요청하는 것으로 클라이언트 입장에서 응답을 받을 때,
+Accept헤더에 있는 데이터 타입이 오지 않으면 내가 말한 데이터가 아니잖아라고 거절을 하는 것이고,
+
+**Content-Type**은 해당 헤더에 있는 데이터가 오지 않았을 경우 
+서버 입장에서 내가 처리할 수 있는 데이터가 아닌데? 라고 거절을 하는 것
