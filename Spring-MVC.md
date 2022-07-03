@@ -1225,3 +1225,69 @@ JSP를 사용하지 않고, Jar를 사용하면 항상 내장 서버(톰캣)을 
 
 스프링 부트 Jar 사용시 `/resources/static/`위치에 `index.html` 파일을 두면 Welcome 페이지로 처리해준다.   
 (스프링 부트가 지원하는 정적 컨텐츠 위치에 /index.html이 있으면 된다.)
+
+<br>
+
+## 로깅 간단히 알아보기
+* 운영 시스템에선 시스템 콘솔에 정보를 출력하지 않고, 별도의 로깅 라이브러리를 이용해 로그를 출력한다.
+
+### **로깅 라이브러리**   
+스프링 부트 라이브러리를 사용하면 spring-boot-starter-logging이 포함된다. 이는 다음 로깅 라이브러리를 사용한다.
+* SLF4J: 인터페이스
+* Logback: SLF4J 구현체
+
+로그 라이브러리는 수 많은 라이브러리가 존재, 그것을 통합해 인터페이스로 제공하는 것이 SLF4J 라이브러리이다.
+실무에서는 스프링 부트 기본 제공 라이브러리인 Logback을 대부분 사용
+
+### **로그의 선언**
+```java
+private Logger log = LoggerFactory.getLogger(getClass());
+private static final Logger log = LoggerFactory.getLogger(Xxx.class) 
+        
+Logger는 초기 생성 이후 변경될 필요가 없고, 유지보수와 가독성을 위해 fianl로 선언
+```
+* `slf4j`는 롬복이 사용 가능하다.
+
+### **로그 호출**   
+`log.info("hello")`   
+시스템 콘솔로 직접 출력하는 것 보다 로그를 사용하면 필요한 로그의 레벨만 출력할 수 있고 부가적인 정보도 얻을 수 있음   
+하지만 `log.debug("String concat log=" + name)`과 같이 연산이 들어가면 덧셈 연산이 먼저 실행됨으로 이렇게 사용하면 안된다.
+
+### **@RestController**
+* `@Controller`의 반환값이 String이면 뷰 이름으로 인식된다. 따라서 **뷰를 찾고 뷰가 렌더링** 된다.
+* `@RestController`는 반환 값으로 뷰를 찾는 것이 아니라, **HTTP 메시지 바디**에 바로 입력함
+  따라서 실행 결과로 Ok 메시지를 받을 수 있다. @ResponseBody와 관련 있음
+
+### **LogTestController**
+* 로그가 출력되는 포멧 확인
+  * 시간, 로그 레벨, 프로세스 ID, 쓰레드 명, 클래스명, 로그 메시지
+* 로그 레벨 설정을 변경해서 출력 결과를 보자.
+  * LEVEL: `TRACE > DEBUG > INFO > WARN > ERROR`
+  * 개발 서버는 debug 출력
+  * 운영 서버는 info 출력
+* @Slf4j로 변경
+
+### **로그 레벨 설정**
+`application.properties`에서 설정
+```
+# 전체 로그 레벨 설정 (default: info)
+logging.level.root=info
+
+@ hello.springmvc 패키지와 그 하위 로그 레벨 설정
+logging.level.hello.springmvc=debug
+```
+
+### 올바른 로그 사용법
+* `log.debug("data= + data)`
+  * 로그 출력 레벨을 info로 설정해도 해당 코드에 있는 문자열 덧셈 연산이 실행되어 사용하지 않는 로그에서의
+    리소스가 사용된다.
+* `log.debug("data={}", data)`
+  * 로그 출력 레벨을 info로 설정하면 아무일도 일어나지 않음, 따라서 의미없는 연산으로 리소스가 낭비되지 않는다.
+
+
+### 로그 사용의 장점
+* 쓰레드 정보, 클래스 이름 같은 부가 정보 함께 볼 수 있고, 출력 모양을 조정 할 수 있음
+* 로그 레벨에 따라 개발 서버에서는 모든 로그를 출력하고, 운영서버에서는 출력하지 않는 등 로그를 상황에 맞게 조절 가능
+* 콘솔에만 출력하는 것이 아니라, 파일이나 네트워크 등, 로그를 별도의 위치에 남길 수 있다. 특히 파일로 남길때는
+  일별, 특정 용량에 따라 로그를 분할하는 것도 가능
+* 성능도 일반 System.out보다 좋다. (내부 버퍼링, 멀티 쓰레드 등) 따라서 실무에선 꼭 사용함
