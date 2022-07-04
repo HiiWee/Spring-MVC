@@ -1476,3 +1476,29 @@ https://docs.spring.io/spring-framework/docs/current/reference/html/web.html#mvc
 
 @Controller의 사용 가능한 응답 값 목록(리턴)   
 https://docs.spring.io/spring-framework/docs/current/reference/html/web.html#mvc-ann-return-types
+
+<br>
+
+## [HTTP 요청 파라미터 - 쿼리 파라미터, HTML form]
+
+HTTP 요청 메시지를 통해 클라이언트 -> 서버로 데이터를 전달하는 방법은 3가지가 존재
+1. GET - 쿼리 파라미터
+   * `?key=value&key=value` 형식
+   * 메시지 바디 없이, URL에 쿼리 파라미터로 데이터 전달
+   * 검색, 필터, 페이징 등에서 사용
+2. POST - HTML Form
+   * content-type: application/x-www-form-urlencoded
+   * 메시지 바디에 쿼리 파라미터 형식으로 전달 (형식은 GET과 동일)
+   * 회원가입, 상품주문, HTML Form 사용
+3. HTTP message body
+   * HTTP API에서 주로 사용 JSON, XML, TEXT
+   * 주로 JSON이 보편화됨
+   * POST, PUT, PATCH
+
+HttpServletRequest를 사용하면 request.getParameter()로 GET과 POST로 받은 요청 파라미터를 조회할 수 있다.   
+(같은 쿼리 파라미터 형식을 사용하므로)
+
+GE(쿼리 파라미터), POST(HTML Form) 모두 형식이 같으므로 구분없이 조회 가능   
+-> 간단하게 **요청 파라미터(request parameter) 조회** 라고 한다.
+
+단계적으로 코드로 구현해보자
