@@ -1438,3 +1438,41 @@ Accept헤더에 있는 데이터 타입이 오지 않으면 내가 말한 데이
 * 회원 삭제: DELETE   `/users/{userId}`
 
 매핑 방법을 봤으니, HTTP 요청이 보내는 데이터들을 스프링 MVC로 어떻게 조회할까?
+
+<br>
+
+## [HTTP요청 - 기본, 헤더 조회]
+애노테이션 기반의 스프링 컨트롤러는 다양한 파라미터를 지원하는데, HTTP 헤더 정보를 조회하는 방법을 알아보자
+
+**RequestHeaderController**   
+* HttpServletRequest, Response 조회
+* HttpMethod 조회
+* Locale 조회
+* @RequestHeader MultiValueMap<String, String> headerMap
+  * 모든 HTTP 헤더를 MultiValueMap 형식으로 조회
+* @RequestHeader("host") String host
+  * 특정 HTTP 헤더를 조회
+  * 속성
+    * 필수 값 여부: required
+    * 기본 값 속성: defaultValue
+* @CookieValue(value = "myCookie", required = false) String cookie
+  * 특정 쿠키 조회
+  * 속성
+    * 필수 값 여부: required
+    * 기본 값 속성: defaultValue
+
+
+> MultiValueMap은 Map과 유사하지만, 하나의 키에 여러 값을 받을 수 있다.   
+> HTTP header, HTTP 쿼리 파라미터와 같이 하나의 키에 여러 값을 받을 때 사용한다.   
+> 내부에 List타입으로 value가 여러개 저장됨
+
+**@Slf4j**
+다음 코드를 자동으로 생성해서 로그를 선언해준다.
+`private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(RequestHeaderController.class);`
+
+**참고**   
+@Controller의 사용 가능한 파라미터 목록 메뉴   
+https://docs.spring.io/spring-framework/docs/current/reference/html/web.html#mvc-ann-arguments
+
+@Controller의 사용 가능한 응답 값 목록(리턴)   
+https://docs.spring.io/spring-framework/docs/current/reference/html/web.html#mvc-ann-return-types
