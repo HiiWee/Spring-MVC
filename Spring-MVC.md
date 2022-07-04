@@ -1502,3 +1502,77 @@ GE(쿼리 파라미터), POST(HTML Form) 모두 형식이 같으므로 구분없
 -> 간단하게 **요청 파라미터(request parameter) 조회** 라고 한다.
 
 단계적으로 코드로 구현해보자
+
+<br>
+
+## [HTTP 요청 파라미터 - @RequestParam]
+스프링이 제공하는 @RequestParam을 사용하면 요청 파라미터를 매우 편리하게 사용할 수 있다.   
+형식: `@RequestParam(name = "", required = boolean, defaultValue = "")`   
+
+### **requestParamV2**   
+```java
+    public String requestParamV2(
+            @RequestParam("username") String memberName,
+            @RequestParam("age") int memberAge)
+```
+`@RequestParam(name = "value") == request.getParameter("value");`
+
+### **requestParamV3**   
+```java
+    public String requestParamV3(
+            @RequestParam String username,
+            @RequestParam int age)
+```
+HTTP 파라미터 이름과 매개변수의 이름이 동일하면 name 속성도 생략 가능하다.
+`@RequestParam(name = "value") == request.getParameter("value");`
+
+### **requestParamV4**
+```java
+    @ResponseBody
+    @RequestMapping("/request-param-v4")
+    public String requestParamV4(String username, int age)
+```
+@RequestParam 자체를 생략 할 수도 있다. 다만, 매개변수의 이름과 HTTP 파라미터 이름이 동일해야 하고,    
+String, int, Integer 등의 단순 타입이어야 한다.   
+애노테이션을 생략하면 required 옵션은 false로 적용된다.
+
+<br>
+
+### **파라미터 필수 여부 - requestParamRequired**   
+* @RequestParam의 required 옵션은 default가 true(null 허용하지 않음)
+* 만약 username이 true일떄 보내지 않으면 400 Bad Request를 내려준다.
+  * 약속한 HTTP 스펙을 지키지 않은것이기 때문에 클라이언트쪽의 잘못이 맞다.
+
+**주의!! - 파라미터 이름만 사용**   
+* `/request-param?username=` 혹은 `/request-param?username`같이 작성하면   
+  빈문자 ""로 통과되기 때문에 주의해야 한다. (파라미터의 이름만 있고 값이 없음)
+
+**주의!! - Primitive type에 null 입력**   
+* `/request-parma` 요청
+* `@RequestParam(required = false) int age`인 경우
+
+null을 int에 입력하는 것은 불가능함. (500 예외 발생)
+따라서 null을 받을 수 있는 Wrapper class로 변경하거나, defaultValue를 사용해 null값 방지
+
+### 기본 값 적용 - requestParamDefault
+```java
+@ResponseBody
+@RequestMapping("/request-param-default")
+public String requestParamDefault(@RequestParam(required = true, defaultValue = "guest") String username,
+@RequestParam(required = false, defaultValue = "-1") int age)
+```
+파라미터에 값이 없는 경우 `defaultValue`이용   
+기본값을 설정했으므로 required의 유무는 상관이 없다.   
+또한 파라미터 이름만 사용하여 빈문자가 전달되는 경우에도 defaultValue가 적용됨
+
+
+### 파라미터를 Map으로 조회하기 - requestParamMap
+```java
+@ResponseBody
+@RequestMapping("/request-param-map")
+public String requestParamMap(@RequestParam Map<String, Object> paramMap)
+```
+key의 값은 HTTP 파라미터의 이름과 동일
+
+> 참고로 Map, MultiValueMap으로 둘 다 조회 가능한데, 파라미터의 값이 여러개라면 List 타입으로 받아올 수 있는
+> MultiValueMap을 이용할 수 있다. 하지만 파라미터 값은 1개씩 보내는게 바랍직함.
