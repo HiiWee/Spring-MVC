@@ -1600,3 +1600,56 @@ username 프로퍼티의 값을 변경하면 setter가 조회하면 getter가 �
 @ModelAttribute, @RequestParam모두 생략이 가능하다 그렇다면 어떻게 구분할까?
 * String, int, Integer등의 단순 타입 -> @RequestParam
 * 나머지 -> @ModelAttribute (argument resolver로 지정해둔 타입 외(HttpServletRequest 등))
+
+<br>
+
+## [HTTP 요청 파라미터 - 단순 텍스트]
+* HTTP message body에 데이터를 직접 담아 요청
+  * HTTP API에서 주로 사용 (JSON이 거의 표준)
+  * POST, PUT, PATCH등의 메소드를 사용
+
+요청 파라미터가 아닌 HTTP 메시지 바디 통해 직접 데이터가 넘어오면(GET, POST Form 제외) @RequestParam, @ModelAttribute를
+사용할 수 없다. (HTML Form 형식으로 전달되는 경우는 요청 파라미터로 인정됨 == 쿼리 스트링과 같은 형식)
+
+* 텍스트 메시지를 HTTP 메시지 바디에 담아 전송 후 읽어보자
+* InputStream 이용해 읽음
+
+### requestBodyString
+HttpServletRequest 를 이용해 ServletInputStream 생성     
+바이트 코드를 직접 스트링으로 변환(인코딩 타입 명시 필수)
+
+### requestBodyStringV2
+파라미터로 InputStream 객체와 Writer 객체를 받아옴 HttpServletRequest에서 InputStream 변환 공수 덜어줌    
+Writer로 바로 HTTP messgae body에 리턴할 수 있음
+* 스프링 MVC 파라미터 지원
+  * InputStream(Reader): HTTP 요청 메시지 바디의 내용을 직접 조회   
+    OutputStream(Writer): HTTP 응답 메시지의 바디에 직접 결과 출력
+
+### requestBodyStringV3
+HttpEntity를 파라미터로 받아옴    
+* HttpEntity: HTTP header, body 정보 편리하게 조회
+  * 메시지 바디 정보 직접 조회(요청 파라미터 조회 기능과는 무관!!)
+* HttpEntity는 응답에도 사용 가능 (return 타입 HttpEntity)
+  * 메시지 바디에 정보 직접 반환
+  * 헤더 정보 포함 가능
+  * view 조회 자동으로 X
+
+부가적으로 HttpEntity를 상속받은 RequestEntity, ResponseEntity도 존재
+* RequestEntity: HttpMethod, url 정보 추가, 요청에서 사용됨
+* ResponseEntity: 응답 시 HTTP 상태 코드 설정 가능
+  * `return new ResponseEntity<String>("Hello World", responseHeaders, HttpStatus.CREATED)`
+
+### @RequestBody - requestBodyStringV4(주로 사용)
+**@RequestBody**   
+HTTP 메시지 바디 정보를 편리하게 조회, 만약 헤더 정보가 필요하다면 HttpEntity, @RequestHeader를 사용   
+(메시지 바디 직접 조회 하는 기능은 `@RequestParam`, `@ModelAttribute`와는 전혀 관계 없음!!)
+
+**요청 파라미터 vs HTTP 메시지 바디**
+* 요청 파라미터 조회 기능: `@RequestParam`, `@ModelAttribute`
+* HTTP 메시지 바디를 직접 조회하는 기능: `@RequestBody`
+
+**@ResponseBody**
+응답 결과를 HTTP 메시지 바디에 직접 담아 전달 따라서, view를 사용하지 않음
+
+> **[참고]**스프링 MVC 내부에서 자동으로 메시지 바디를 읽어서 문자나 객체로 변환해서 전달해주는 
+> HttpMessageConverter라는 기능을 사용한다. 내부적으로 이런 과정을 거치기 때문에 가능하다.
