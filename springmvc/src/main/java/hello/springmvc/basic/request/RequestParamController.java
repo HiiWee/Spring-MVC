@@ -1,8 +1,10 @@
 package hello.springmvc.basic.request;
 
 
+import hello.springmvc.basic.HelloData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -58,15 +60,14 @@ public class RequestParamController {
     }
 
     /**
-     *  @RequestParam.required
-     *  /request-param-required -> username이 없으므로 예외
-     *  주의!
-     *  /request-param-required?username= -> 빈문자로 통과
+     * @RequestParam.required /request-param-required -> username이 없으므로 예외
+     * 주의!
+     * /request-param-required?username= -> 빈문자로 통과
      */
     @ResponseBody
     @RequestMapping("/request-param-required")
     public String requestParamRequired(@RequestParam(required = true) String username,
-                                 @RequestParam(required = false) Integer age) {
+                                       @RequestParam(required = false) Integer age) {
 
         log.info("username={}, age={}", username, age);
         return "ok";
@@ -75,7 +76,7 @@ public class RequestParamController {
     @ResponseBody
     @RequestMapping("/request-param-default")
     public String requestParamDefault(@RequestParam(required = true, defaultValue = "guest") String username,
-                                       @RequestParam(required = false, defaultValue = "-1") int age) {
+                                      @RequestParam(required = false, defaultValue = "-1") int age) {
 
         log.info("username={}, age={}", username, age);
         return "ok";
@@ -86,6 +87,23 @@ public class RequestParamController {
     public String requestParamMap(@RequestParam Map<String, Object> paramMap) {
 
         log.info("username={}, age={}", paramMap.get("username"), paramMap.get("age"));
+        return "ok";
+    }
+
+    // @ModelAttribute를 이용해 객체 프로퍼티를 이용해 set까지 완료해줌
+    @ResponseBody
+    @RequestMapping("/model-attribute-v1")
+    public String modelAttributeV1(@ModelAttribute HelloData helloData) {
+        log.info("username={}, age={}", helloData.getUsername(), helloData.getAge());
+
+        return "ok";
+    }
+
+    // @ModelAttribute 생략
+    @ResponseBody
+    @RequestMapping("/model-attribute-v2")
+    public String modelAttributeV2(HelloData helloData) {
+        log.info("username={}, age={}", helloData.getUsername(), helloData.getAge());
         return "ok";
     }
 }

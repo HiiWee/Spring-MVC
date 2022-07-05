@@ -1576,3 +1576,27 @@ key의 값은 HTTP 파라미터의 이름과 동일
 
 > 참고로 Map, MultiValueMap으로 둘 다 조회 가능한데, 파라미터의 값이 여러개라면 List 타입으로 받아올 수 있는
 > MultiValueMap을 이용할 수 있다. 하지만 파라미터 값은 1개씩 보내는게 바랍직함.
+
+<br>
+
+## [HTTP 요청 파라미터 - @ModelAttribute]
+보통 요청 파라미터를 받아서 필요한 객체를 만들고 객체에 값을 넣고 반환하지만 스프링은 이 과정을 자동화 시켜주는
+`@ModelAttribute`를 제공해준다.
+
+롬복의 @Data   
+@Getter, @Setter, @ToString, @EqualsAndHashCode, @RequiredArgsConstructor를 자동 적용
+
+### **@ModelAttribute의 역할**
+* HelloData 객체 생성
+* 요청 파라미터의 이름으로 HelloData 프로퍼티를 찾아서 해당 프로퍼티의 setter를 호출해 파라미터의 값을 입력(바인딩)함
+
+### **프로퍼티**
+객체에 getUsername(), setUsername() 메서드가 존재하면 `username`이라는 프로퍼티를 가지고 있는것.   
+username 프로퍼티의 값을 변경하면 setter가 조회하면 getter가 호출된다.   
+(setXxx(), getXxx()에서 먼저 set, get을 때고 대문자를 소문자로 변환하여 프로퍼티를 만듦)
+
+혹여나 쿼리 파라미터에 해당 자료형과 다른 자료형이 들어오면 BindException이 발생함
+
+@ModelAttribute, @RequestParam모두 생략이 가능하다 그렇다면 어떻게 구분할까?
+* String, int, Integer등의 단순 타입 -> @RequestParam
+* 나머지 -> @ModelAttribute (argument resolver로 지정해둔 타입 외(HttpServletRequest 등))
