@@ -1653,3 +1653,45 @@ HTTP 메시지 바디 정보를 편리하게 조회, 만약 헤더 정보가 필
 
 > **[참고]**스프링 MVC 내부에서 자동으로 메시지 바디를 읽어서 문자나 객체로 변환해서 전달해주는 
 > HttpMessageConverter라는 기능을 사용한다. 내부적으로 이런 과정을 거치기 때문에 가능하다.
+
+<br>
+
+## [HTTP 요청 메시지 - JSON]
+HTTP API에서 주로 사용하는 JSON 데이터 형식 조회   
+
+### requestBodyJsonV1
+가장 기본적으로 조회하는 방법은 HttpServletRequest를 사용해 직접 HTTP 메시지 바디에서 데이터를 읽고,   
+Jackson 라이브러리인 ObjectMapper를 이용하는 방법
+
+### requestBodyJsonV2
+`@RequestBody`를 사용해 HTTP 메시지에서 데이터를 꺼내고 messageBody에 저장함 (매개변수)   
+이 또한 ObjectMapper를 통해 문자로된 JSON을 파싱하여 자바 객체로 변환한다.
+
+### requestBodyJsonV3
+`HttpEntity`, `@RequestBody`는 HttpMessageConverter가 HTTP 메시지 바디의 내용을 문자 혹은 객체로 변환해줌   
+V2에서와 같이 문자 뿐만 아니라 JSON을 객체로 변환하여 넘겨주기도 함 따라서 매개변수로 객체를 직접 받을 수 있다.
+
+다만, **@RequestBody는 생략할 수 없다.** 요청 파라미터에서 @ModelAttribute는 int, Integer, String등 단순 타입이 아니라면
+모두 @ModelAttribute가 적용되므로 요청 파라미터를 처리하게 된다.    
+따라서 **명시적으로 @RequestBody를 작성해주어야 HTTP 메시지 바디로 동작한다.**
+
+> 혹여나 Postman을 이용할 때 Content-type이 application/json이 아니라면 JSON을 처리하는 HTTP 메시지 컨버터가   
+> 동작하지 않으니 꼭 주의하자!
+
+### requestBodyJsonV4
+`HttpEntity`를 이용해 객체를 받아올 수 도 있다. 이 역시 HTTP 메시지 컨버터가 내부에서 처리해준다.
+
+### requestBodyJsonV5
+`@ResponseBody`는 반환타입으로 String 뿐만 아니라 객체로 지정할 수 있다.   
+이때 HttpMessageConverter가 다시 그 역할을 맡아서 한다.    
+결국 메시지 컨버터는 요청을 받을때도 이용되지만 응답을 할때도 이용할 수 있다. **단, @ResponseBody가 있어야한다.**   
+메시지 컨버터는 객체를 JSON으로 변환시켜 반환한다.
+> Accept: application/json 인지 확인이 필요함
+
+* `@RequestBody` 요청
+  * JSON 요청 -> HTTP 메시지 컨버터 -> 객체
+* `@ResponseBody` 응답
+  * 객체 -> HTTP 메시지 컨버터 -> JSON 응답
+
+### requestBodyJsonV6
+V5에서 반환타입이 객체가 아니라 HttpEntity를 사용해도 메시지 컨버터가 동작하여 JSON으로 응답하는걸 확인할 수 있다.
