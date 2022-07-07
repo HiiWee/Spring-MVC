@@ -1695,3 +1695,52 @@ V2에서와 같이 문자 뿐만 아니라 JSON을 객체로 변환하여 넘겨
 
 ### requestBodyJsonV6
 V5에서 반환타입이 객체가 아니라 HttpEntity를 사용해도 메시지 컨버터가 동작하여 JSON으로 응답하는걸 확인할 수 있다.
+
+<br>
+
+## [HTTP 응답 - 정적 리소스, 뷰 템플릿]
+스프링은 크게 3가지의 응답 데이터를 만드는 방법이 존재
+
+* 정적 리소스
+  * 웹 브라우저에 정적인 HTML, css, js를 제공할 때 사용
+* 뷰 템플릿 사용
+  * 웹 브라우저에 동적인 HTML을 제공할 떄 사용(SSR)
+* HTTP 메시지 사용
+  * HTTP API를 제공하는 경우에 데이터를 전달해야 하므로 JSON과 같은 타입을 HTTP 메시지 바디에 실어 응답
+
+### 정적 리소스
+스프링 부트는 클래스패스의 다음 디렉토리에 있는 정적 리소스를 제공함   
+`/static`, `/public/`, `/resources`, `/META-INF/resources`   
+
+`src/main/resources`는 리소스를 보관하는 곳, 클래스패스의 시작경로임   
+아래 경로에 리소스를 넣으면 스프링 부트가 정적 리소스로 서비스 제공해줌
+
+**정적 리소스:** `src/main/resources/static`    
+(해당 파일의 변경없이 그대로 서비스, 위의 4가지 경로 중 아무거나 지정하면 해당 디렉토리로 사용됨)
+
+
+### 뷰 템플릿
+뷰 템플릿을 거쳐서 HTML이 생성되고 뷰가 응답을 만들어 전달   
+HTML 동적 생성 용도 외 다른 뷰 템플릿이 만들 수 있는것이라면 뭐든지 가능하다.
+
+**기본 뷰 템플릿 경로**: `src/main/resources/templates`   
+
+**responseViewV1: ModelAndView를 반환 하는 경우**   
+* 뷰의 논리적 이름, 뷰에 필요한 데이터(모델)을 설정하고 ModelAndView 자체를 반환
+
+**responseViewV2: String을 반환하는 경우 - view or HTTP 메시지**   
+* @ResponseBody 없으면 String값은 `논리적 뷰`로 인식되어 뷰 리졸버 실행되고 뷰 찾음 (view)   
+* @ResponseBody 있으면 String값은 `HTTP 메시지 바디에 직접 입력`됨
+
+**responseViewV3: void 타입인 경우**
+* `@Controller`를 사용하고, HttpServletResponse, OutputStream(Writer)같은 HTTP 메시지 바디를 처리하는
+  파라미터가 없으면 `요청 URL을 논리적 뷰 이름`으로 사용한다.
+* **명시성이 떨어지고, 이렇게 맞는 경우가 드물어서 권장하지 않음**
+
+
+### Thymeleaf 스프링 부트 설정   
+초기 DI를 했으므로 자동 추가 되어있으므로 스프링 부트가 ThymeleafViewResolver등 필요 빈들 자동등록 됨   
+또한 viewResolver의 prefix, postfix도 초기값으로 세팅 되어있다.
+
+**스프링 부트 타임리프 관련 추가설정 공식 사이트**   
+https://docs.spring.io/spring-boot/docs/2.4.3/reference/html/appendix-application-properties.html#common-application-properties-templating
