@@ -1744,3 +1744,35 @@ HTML 동적 생성 용도 외 다른 뷰 템플릿이 만들 수 있는것이라
 
 **스프링 부트 타임리프 관련 추가설정 공식 사이트**   
 https://docs.spring.io/spring-boot/docs/2.4.3/reference/html/appendix-application-properties.html#common-application-properties-templating
+
+<br>
+
+## [HTTP 응답 - HTTP API, 메시지 바디에 직접 입력]
+HTTP API를 제공하는 경우, HTML이 아니라 데이터를 전달해야 함 (TEXT, XML, JSON(주로사용))   
+> HTML, 뷰 템플릿은 HTTP 응답 메시지 바디에 HTML 데이터가 담겨 나가고   
+> 이번시간에 알아볼 것은 HTML 데이터가 아닌 직접 HTTP 응답 메시지를 전달하는 경우
+
+**responseBodyV1**   
+HttpServletResponse 객체를 직접 받아와 writer를 통해 HTTP 메시지 바디에 데이터 입력
+
+**responseBodyV2**   
+HttpEntity(HTTP 메시지 헤더, 바디 정보 가지고있음)를 구현한 ResponseEntity를 이용해 
+메시지와 `HTTP 응답 코드를 추가로 설정`할 수 있음
+
+**responseBodyV3**   
+@ResponseBody를 이용해 view를 사용하지 않고, `HTTP 메시지 컨버터를 통해 HTTP 메시지를 직접 입력`할 수 있음   
+(ResponseEntity도 동일한 방식으로 동작)
+
+**responseBodyJsonV1**   
+ResponseEntity를 반환한다. `HTTP 메시지 컨버터를 통해 JSON 형식으로 변환`되어 반환됨
+
+**responseBodyJsonV2**
+@ResponseBody를 이용해 객체를 반환하면 `HTTP 메시지 컨버터가 JSON 형식으로 변환하여 반환`함   
+`HTTP 응답 코드 설정을 위해 @ResponseStatus(HttpStatus.OK)애노테이션`을 사용하여 응답 코드 설정   
+(애노테이션이므로 정적임, 상황에 따라 동적으로 코드가 변환되어야 하면 ResponseEntity를 이용하자)
+
+**@RestController**
+@Controller + @ResponseBody의 역할을 해줌, `클래스 레벨에 붙이면 해당 컨트롤러 모두 @ResponseBody가 적용`된다.   
+즉, HTTP 메시지 바디에 직접 데이터 입력   
+@Controller와 @ResponseBody를 클래스레벨에 붙여도 동일한 적용 효과를 얻을 수 있다.   
+@RestController는 REST API(HTTP API)를 만들때 사용하는 컨트롤러이다.
