@@ -1776,3 +1776,91 @@ ResponseEntity를 반환한다. `HTTP 메시지 컨버터를 통해 JSON 형식�
 즉, HTTP 메시지 바디에 직접 데이터 입력   
 @Controller와 @ResponseBody를 클래스레벨에 붙여도 동일한 적용 효과를 얻을 수 있다.   
 @RestController는 REST API(HTTP API)를 만들때 사용하는 컨트롤러이다.
+
+<br>
+
+## [HTTP 메시지 컨버터]
+* HttpMessageConverter가 적용되는 상황
+  * HTTP 요청: @RequestBody, HttpEntity(or RequestEntity)
+  * HTTP 응답: @ResponseBody, HttpEntity(or ResponseEntity)
+
+* HttpMessageConverter 인터페이스의 메소드
+  * canRead(): HTTP 요청시 해당 메시지 컨버터가 HTTP 바디 메시지를 읽을 수 있는지 확인(클래스 타입(매개인자)와 content-type)
+  * canWrite(): HTTP 응답시 해당 메시지 컨버터가 HTTP 바디 메시지를 쓸 수 있는지 확인(반환의 클래스 타입과, Accept 미디어 타입)
+  * read(): canRead() 조건 만족하면 호출, 해당 매개인자에 맞게 객체를 생성하고 반환함
+  * write(): canWrite() 조건 만족하면 호출, HTTP 응답 메시지 바디에 데이터를 Accept 미디어 타입에 맞춰서 생성
+
+> canRead(), canWrite()는 메시지 컨버터가 해당 클래스, 미디어 타입을 지원하는지 체크하고, read(), write()는 메시지 컨버터는 통해 메시지를 읽고 쓰는 기능을 한다.
+
+HTTP 메시지 컨버터는 HTTP 요청, 응답 둘 다 사용됨   
+항상 대상 클래스 타입과, 미디어 타입을 이용해 어떤 HttpMessageConverter의 구현체를 사용할지 결정
+
+### **대표적 스프링 기본 메시지 컨버터 구현체**
+* 0 = ByteArrayHttpMessageConverter
+* 1 = StringHttpMessageConverter
+* 2 = MappingJackson2HttpMessageConverter
+
+두 가지 조건을 체크하면서 만족하지 않으면 다음 우선순위의 메시지 컨버터로 넘어간다.
+
+<br>
+
+### **각 메시지 컨버터 동작 개요**   
+* `ByteArrayHttpMessageConverter`: `byte[]` 데이터 처리
+  * 클래스 타입: byte[], 미디어타입: \*/\*
+  * 요청 예) @RequestBody byte[] data
+  * 응답 예) @ResponseBody return byte[] 쓰기 미디어 타입 application/octet-stream
+* `StringHttpMessageConverter` : String 문자로 데이터를 처리한다. 
+  * 클래스 타입: String , 미디어타입: \*/\*
+  * 요청 예) @RequestBody String data
+  * 응답 예) @ResponseBody return "ok" 쓰기 미디어타입 text/plain
+* `MappingJackson2HttpMessageConverter` : application/json
+  * 클래스 타입: 객체 또는 HashMap , 미디어타입 application/json 관련
+  * 요청 예) @RequestBody HelloData data
+  * 응답 예) @ResponseBody return helloData 쓰기 미디어타입 application/json 관련
+
+<br>
+
+### **실제 요청 예시**
+
+```
+content-type: application/json
+
+@RequestMapping
+void hello(@RequestBody String data) {...}
+```
+* 매개인자가 `String` 이고, `application/json`은 \*/\*에 포함되므로 `StringHttpMessageConverter` 선택
+
+```
+content-type: application/json
+
+@RequestMapping
+void hello(@RequestBody HelloData data) {...}
+```
+* 매개인자가 `객체`이고 `application/json` 타입 이므로 `MappingJackson2HttpMessageConverter` 선택
+
+```
+content-type: text/html
+
+@RequestMapping
+void hello(@RequestBody HelloData data) {...}
+```
+* 매개인자가 `객체`이고 text/html을 만족하는 메시지 컨버터는 존재하지 않으므로 오류 반환
+
+<br>
+
+### **HTTP 요청 및 응답시에 메시지 컨버터의 처리 과정**
+
+**HTTP 요청 데이터 읽기**
+* HTTP 요청 옴, (컨트롤러는 @RequestBody, HttpEntity) 파라미터 사용
+* 메시지 컨버터 동작, 메시지 읽을 수 있는지 확인 위해 `canRead()` 호출
+  1. 대상 클래스 타입 지원?
+  2. HTTP 요청의 `Content-Type` 미디어 타입을 지원?
+* `canRead()` 만족하면 `read()` 호출해 객체 생성 및 반환
+
+**HTTP 응답 데이터 생성**
+* 컨트롤러에서 `@ResponseBody`, `HttpEntity`로 값이 반환
+* 메시지 컨버터가 메시지를 쓸 수 있는지 확인하기 위해 `canWrite()` 호출
+  1. 대상 클래스 타입 지원?
+  2. HTTP 요청의 Accept 미디어 타입 지원?   
+     (정확히는 `@RequestMapping`, `produces` 옵션)
+* `canWrite()` 조건을 만족하면 `write()`를 호출해 HTTP 응답 메시지 바디에 데이터 생성
