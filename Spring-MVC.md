@@ -1864,3 +1864,58 @@ void hello(@RequestBody HelloData data) {...}
   2. HTTP 요청의 Accept 미디어 타입 지원?   
      (정확히는 `@RequestMapping`, `produces` 옵션)
 * `canWrite()` 조건을 만족하면 `write()`를 호출해 HTTP 응답 메시지 바디에 데이터 생성
+
+<br>
+
+## [요청 매핑 핸들러 어댑터 구조]
+RequestMappingHandlerAdapter의 동작 방식
+1. 디스패처 서블릿이 RequestMappingHandlerAdapter 호출
+2. `RequestMappingHandlerAdapter`가 ArgumentResolver 호출
+3. `ArgumentResolver`는 알맞은 매개변수 객체 생성후 반환
+4. 핸들러 실행 후 `ReturnValueHandler` 호출
+5. ReturnValueHandler이 컨트롤러의 반환 값을 생성 후 반환
+
+### **ArgumentResolver**   
+* 애노테이션 기반 컨트롤러는 다양한 파라미터를 사용할 수 있다. 이렇게 다양한 파라미터들을 유연하게 처리할 수 있게 도와주는 녀석이 `ArgumentResolver`임   
+
+* ArgumentResolver는 컨트롤러가 필요로 하는 다양한 파라미터의 값(객체)들을 생성하고 준비가 완료되면 컨트롤러를 호출하며 값을 넘겨준다.
+
+**`ArgumentResolver`동작 방식**   
+`supportsParameter()`를 호출해 해당 파라미터의 지원여부 체크   
+지원하는 파라미터라면 `resolveArgument()` 호출해 실제 객체 생성   
+이후 실제 컨트롤러 호출하며 넘겨줌(약 30개가 넘는 ArgumentResolver 지원)
+
+<br>
+
+### **ReturnValueHandler**
+``HandlerMethodReturnValueHandler``를 줄여 말함   
+요청 값의 파라미터가 아닌 응답 값을 변환하고 처리함   
+(컨트롤러에서 String으로 뷰 이름을 반환해도 동작하는 이유이다.)
+약 10여개가 넘는 ReturnValueHandler를 지원해준다.
+
+> ArgumentResolver 가능 파라미터 목록   
+> https://docs.spring.io/spring-framework/docs/current/reference/html/web.html%23mvc-ann-arguments   
+> ReturnValueHandler 가능 응답 값 목록   
+> https://docs.spring.io/spring-framework/docs/current/reference/html/web.html%23mvc-ann-return-types    
+
+<br>
+
+### HTTP 메시지 컨버터는 어디?
+HTTP 메시지 컨버터를 사용하는 `@RequestBody`, `HttpEntity`모두 컨트롤러가 필요로 하는 파라미터의 값에 사용된다.   
+반대로 `@ResponseBody`, `HttpEntity`도 컨트롤러의 반환 값을 이용함
+
+**요청의 경우**   
+@RequestBody, HttpEntity를 처리하는 `ArgumentResolver`가 호출되면 이 리졸버는 내부적으로 HTTP 메시지 컨버터를 호출해 필요한 객체를 받아오고, 컨트롤러를 실행하며 인자를 넘겨준다.
+
+**응답의 경우**
+@ResponseBody, HttpEntity를 처리하는 `ReturnValueHandler`가 호출되면 이 리졸버는 내부적으로 HTTP 메시지 컨버터를 호출해 필요한 객체를 받아오고 해당 객체를 리턴값으로 반환한다.
+
+> 스프링 MVCsms @RequestBody @ResponseBody가 존재하면 `RequestResponseBodyMethodProcessor`(ArgumentResolver)호출   
+> 만약 HttpEntity가 존재하면 HttpEntityMethodProcessor(ArgumentResolver)를 사용한다.
+
+<br>
+
+### 확장
+스프링은 HandlerMethodArgumentResolver, HandlerMethodReturnValueHandler, HttpMessageConverter를 모두 인터페이스로 제공하므로 기능을 확장할 수 있음
+
+기능 확장은 WebMvcConfigurer를 상속받고 스프링 빈으로 등록해 원하는 부분을 구현하면 된다.
