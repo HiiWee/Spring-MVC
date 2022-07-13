@@ -1954,3 +1954,69 @@ CSS는 모두 bootstrap 이용
 
 정적 리소스가 공개되는 /resources/static 폴더에 HTML을 넣어두면, 실제 서비스에서도 공개됨, 따라서
 실 서비스를 운영한다면 공개할 필요없는 HTML같은 정적 리소스 파일을 두는것은 주의해야 한다.
+
+<br>
+
+## [상품 목록 - 타임리프]
+타임리프는 natural template이라고도 함 왜 그럴까?
+
+### **타임리프 사용 선언**
+`<html xmlns:th="http://www.thymeleaf.org">`
+
+### **속성 변경 - th:href**
+`th:href="@{/css/bootstrap.min.css}"`
+* href="value1"을 th:href="value2"로 변경
+* 타임리프를 거치면 th:xxx값으로 변경, 값이 없다면 새로 생성한다.
+* 정적인 HTML은 기본 href 속성이 사용됨 (뷰 템플릿 거치면 동적으로 변경)
+* 대부분의 HTML 속성 `th:xxx`형식으로 변경 가능
+
+### **타임리프 핵심**
+* `th:xxx`가 붙은 부분은 SSR이므로 기존것을 대체, 이게 없다면 기존 html의 속성을 이용
+* 정적인 파일을 직접 열어도 th:xxx는 브라우저가 모르므로 무시됨
+* HTML 보기와, 동적인 템플릿도 동시에 볼 수 있음 (**타임리프의 가장 큰 장점**)
+
+### **URL 링크 표현식 - @{...}**
+`th:href="@{/css/bootstrap.min.css}"`
+* `@{...}` 타임리프는 URL 링크를 사용하는 경우 `@{...}`를 사용 이를 URL 링크 표현식이라함
+* 이는 서블릿 컨텍스트 자동 포함함
+
+### 상품 등록 폼 이동: 속성 변경 - th:onclick
+* onclick="location.href='addForm.html'"
+* th:onclick="|location.href=\`@{/basic/items/add}\`|" (**리터럴 대체 문법 사용됨**)
+
+### 리터럴 대체 - |...|
+|...| 으로 사용
+* 기존 타임리프는 문자와 표현식이 분리되어 있으므로 더하기 연산을 사용해야 하지만, 리터럴 대체 문법을 이용하면
+  더하기 없이 편리하게 사용할 수 있다.
+  * (기존) `<span th:text="'Welcome to our application, ' + ${user.name} + '!'">`
+  * (리터럴 대체 문법) `<span th:text="|Welcome to our application, ${user.name}!|">`
+
+### 반복 출력 - th:each
+* `<tr th:each="item : ${items}">`
+* 반복은 th:each 를 사용 items 컬렉션 객체의 데이터들이 item에 하나씩 담김
+* 컬렉션내 데이터의 수만큼 반복 (향상된 for 문)
+
+### 변수 표현식 - ${...}
+* `<td th:text="${item.price}">10000</td>`
+* 모델에 포함된 값이나, 타임리프 변수로 선언한 값을 조회할 수 있음
+* 프로퍼티 접근법 사용(get, set때고, 대문자를 소문자로 치환)
+
+### 내용 변경 - th:text
+* `<td th:text="${item.price}">10000</td>`
+* 내용의 값을 `th:text`의 값으로 변경
+* 10000을 `${item.price}`의 값으로 변경한다.
+
+### URL 링크 표현식2 - @{...}
+* `th:href="@{/basic/items/{itemId}(itemId=${item.id})}"`--> (itemId=${item.id}) 경로 변수 사용
+* URL 링크 표현식을 사용하면 경로를 템플릿처럼 편리하게 사용할 수 있음
+* 경로 변수 및 쿼리 파라미터도 생성 가능
+* (문법)th:href="@{/basic/items/{itemId}(itemId=${item.id}, query='test')}"
+* 결과 http://localhost:8080/basic/items/1?query=test
+
+### 간단한 URL 링크(리터럴 대체 사용)
+* `th:href="@{|/basic/items/${item.id}|}"`
+* 상품이름 선택하는 링크를 리터럴 대체 문법을 사용해 간단히 표현
+
+
+> 타임리프는 순수 HTML 파일을 웹 브라우저에서 열어도 꺠지지 않고, 서버를 통해 뷰 템플릿을 거쳐도 동적인 결과를
+> 확인할 수 있다. 이런 타임리프의 특성때문에 Natural Template이라고도 한다.
