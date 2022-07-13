@@ -2020,3 +2020,23 @@ CSS는 모두 bootstrap 이용
 
 > 타임리프는 순수 HTML 파일을 웹 브라우저에서 열어도 꺠지지 않고, 서버를 통해 뷰 템플릿을 거쳐도 동적인 결과를
 > 확인할 수 있다. 이런 타임리프의 특성때문에 Natural Template이라고도 한다.
+
+<br>
+
+## [상품 상세]
+상품 상세 컨트롤로와 뷰를 개발하자.
+
+```java
+@GetMapping("/{itemId}")
+public String item(@PathVariable Long itemId, Model model) {...}
+```
+`PathVariable` 로 넘어온 상품ID로 상품을 조회하고, 모델에 담아둔다. 그리고 뷰 템플릿을 호출한다.
+
+### 속성 변경 - th:value
+`th:value="${item.id}"`
+* 모델에 있는 item 정보를 획득하고 프로퍼티 접근법으로 출력 (get, set 없애고 대문자를 소문자로)
+* value 속성을 동적으로 렌더링하면 `th:value`속성으로 변경됨
+
+**상품수정 링크**
+* `th:onclick="|location.href='@{/basic/items/{itemId}/edit(itemId=${item.id})}'|"` 리터럴 대체, 경로 변수 사용
+* `th:onclick="|location.href='@{/basic/items}'|"` 리터럴 대체 문법 이용
