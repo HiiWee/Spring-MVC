@@ -2043,7 +2043,7 @@ public String item(@PathVariable Long itemId, Model model) {...}
 
 <br>
 
-##[상품 등록 폼]
+## [상품 등록 폼]
 ### 속성 변경 - th:action
 * HTML form에서 action에 값이 없으면 현재 URL에 데이터를 전송함
 * 상품 등록 폼의 URL, 실제 상품 등록을 처리하는 로직은 URL이 동일하지만 HTTP method에서 차이가 있다.
@@ -2052,3 +2052,28 @@ public String item(@PathVariable Long itemId, Model model) {...}
 
 **취소**
 * 취소 버튼 클릭시 단순히 상품 목록 페이지로 돌아간다.
+
+<br>
+
+## [상품 등록 처리 - @ModelAttribute]
+상품 등록 폼에서 전달받은 요청 파라미터를 등록처리해보자
+
+다음과 같이 서버에 데이터를 전달함   
+* **POST - HTML form**
+  * `content-type: application/x-www-form-urlencoded`
+  * 메시지 바디에 **쿼리 파리미터** 형식으로 전달 `itemName=itemA&price=10000&quantity=10`
+  * 예) 회원 가입, 상품 주문, HTML Form 사용
+
+요청 파라미터를 받는 방법은 @RequestParam도 있지만, 객체로 묶어서 @ModelAttribute로도 받을 수 있다.   
+@ModelAttribute는 내부적으로 요청 파라미터의 값을 프로퍼티 접근법으로 입력함
+
+### **@ModelAttribute - Model 추가 기능**
+`@ModelAttribute`에 `name 속성`으로 이름을 지정하면 Model 객체에 이름을 설정한 name속성 값으로 등록하고, 자동으로 객체를 저장한다.
+따라서 Model에 직접 addAttribute를 할 필요가 없어진다.
+
+**이름 다르게, 생략**   
+이름을 다르게 지정해도 다른 이름으로 Model에 등록되고, 이름 자체를 생략하면 클래스 이름의 앞글자를 소문자로 변경해   
+디폴트로 이름을 지정해 등록한다. (`Item -> item`)
+
+**@ModelAttribute 자체를 생략**   
+더하여 @ModelAttribute 자체를 생략해도 Model에 자동 등록을 해주는데 이때도 클래스 이름을 이용한다.
