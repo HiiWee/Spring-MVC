@@ -2037,6 +2037,18 @@ public String item(@PathVariable Long itemId, Model model) {...}
 * 모델에 있는 item 정보를 획득하고 프로퍼티 접근법으로 출력 (get, set 없애고 대문자를 소문자로)
 * value 속성을 동적으로 렌더링하면 `th:value`속성으로 변경됨
 
-**상품수정 링크**
-* `th:onclick="|location.href='@{/basic/items/{itemId}/edit(itemId=${item.id})}'|"` 리터럴 대체, 경로 변수 사용
-* `th:onclick="|location.href='@{/basic/items}'|"` 리터럴 대체 문법 이용
+**상품수정 및 목록 링크**
+* (상품 수정)`th:onclick="|location.href='@{/basic/items/{itemId}/edit(itemId=${item.id})}'|"` 리터럴 대체, 경로 변수 사용
+* (목록)`th:onclick="|location.href='@{/basic/items}'|"` 리터럴 대체 문법 이용
+
+<br>
+
+##[상품 등록 폼]
+### 속성 변경 - th:action
+* HTML form에서 action에 값이 없으면 현재 URL에 데이터를 전송함
+* 상품 등록 폼의 URL, 실제 상품 등록을 처리하는 로직은 URL이 동일하지만 HTTP method에서 차이가 있다.
+  * 상품 등록 폼: GET /basic/items/add
+  * 상품 등록 처리: POST /basic/items/add
+
+**취소**
+* 취소 버튼 클릭시 단순히 상품 목록 페이지로 돌아간다.
