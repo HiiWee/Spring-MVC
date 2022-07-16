@@ -2077,3 +2077,23 @@ public String item(@PathVariable Long itemId, Model model) {...}
 
 **@ModelAttribute 자체를 생략**   
 더하여 @ModelAttribute 자체를 생략해도 Model에 자동 등록을 해주는데 이때도 클래스 이름을 이용한다.
+
+<br>
+
+## [상품 수정]
+이전의 상품 등록과 유사하다.
+* `GET` /items/{itemId}/edit : 상품 수정 폼   
+* `POST` /items/{itemId}/edit : 상품 수정 처리
+
+몇가지 알고가면 좋은점이 존재한다.
+1. 리다이렉트
+    * 상품 수정은 마지막에 뷰 템플릿을 호출하는 대신 상품 상세 화면으로 이동할 수 있게 리다이렉트 해야한다.
+    * 스프링은 `return "redirect:[경로]";`와 같이 리다이렉트 방법을 제공한다.
+    * 컨트롤러에서 매핑되었던 @PathVariable을 redirect에서도 사용할 수 있다.
+      * return "redirect:basic/items/{itemId}"; (@PathVariable Long itemId를 사용함)
+2. 리다이렉트에서도 `@PathVariable`값을 사용할 수 있다.
+
+> 참고   
+> HTML Form 전송은 PUT, PATCH지원하지 않음 (GET ,POST만 가능)   
+> PUT, PATCH는 HTTP API전송에서 사용되는데, 히든 필드를 이용하면 HTTP POST로 form 요청을 할 때    
+> PUT, PATCH를 이용할 수 있다. (하지만 이 역시도 POST요청)
