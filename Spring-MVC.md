@@ -2097,3 +2097,31 @@ public String item(@PathVariable Long itemId, Model model) {...}
 > HTML Form 전송은 PUT, PATCH지원하지 않음 (GET ,POST만 가능)   
 > PUT, PATCH는 HTTP API전송에서 사용되는데, 히든 필드를 이용하면 HTTP POST로 form 요청을 할 때    
 > PUT, PATCH를 이용할 수 있다. (하지만 이 역시도 POST요청)
+
+<br>
+
+## [PRG Post/Redirect/Get]
+기존의 상품 등록 페이지에서 등록완료 화면에서 새로고침을 하면 중복 등록이 되는 현상이 존재   
+**새로고침은 마지막에 호출되었던걸 다시 호출하므로 POST를 계속 호출하게되면 중복 상품이 등록된다.**   
+따라서 ID만 증가하고 나머지 내용은 동일한 상품들이 목록에 나타남.
+
+### **PRG를 이용하자!**   
+* 상품 등록 폼을 작성하고 등록 버튼을 누르면 컨트롤러에서 해당 상품을 등록하고 뷰 템플릿을 내부적으로 호출하는것이 아니라 
+  `Redirect`를 통해 해당 페이지를 GET 방식으로 열 수 있게 한다.
+
+* 그렇게 되면 최종적으로 등록 후 보여지는 페이지는 GET 요청이므로 아무리 새로고침해도 중복 상품이 등록되지 않는다.
+* `POST add/` 가 아니라 `GET /items/{itemId}`로 주소가 변경됨
+
+```java
+@PostMapping("/add")
+public String addItemV5(Item item) {
+ itemRepository.save(item);
+ return "redirect:/basic/items/" + item.getId();
+}
+```
+실제 코드는 다음과 같은데 return에서 `redirect:`를 통해 해당 주소로 리다이렉트할 수 있다.
+이러한 문제 해결 방안을 `Post/Redirect/Get`이라 말한다.
+
+> **주의**   
+> `return "redirect:/basic/items/" + item.getId();`는 URL에 직접 문자열 더하기를 이용한다.   
+> 이렇게 되면 URL 인코딩이 되지 않으므로 위험성이 존재한다. 따라서 `RedirectAttributes`를 사용해야 함

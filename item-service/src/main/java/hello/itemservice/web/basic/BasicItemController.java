@@ -84,11 +84,19 @@ public class BasicItemController {
 
     // 상품 등록 처리 V4: @ModelAttribute 자체를 생략
     // (객체 타입은 @ModeAttribute 적용됨, 여기서도 클래스명이 모델의 이름으로 사용됨)
-    @PostMapping("/add")
+    // @PostMapping("/add")
     public String addItemV4(Item item) {
         itemRepository.save(item);
 
         return "basic/item";
+    }
+
+    // PRG 이용 V5
+    @PostMapping("/add")
+    public String addItemV5(Item item) {
+        itemRepository.save(item);
+
+        return "redirect:/basic/items/" + item.getId();
     }
 
     // 상품 수정
