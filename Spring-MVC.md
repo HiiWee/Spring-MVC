@@ -2125,3 +2125,26 @@ public String addItemV5(Item item) {
 > **주의**   
 > `return "redirect:/basic/items/" + item.getId();`는 URL에 직접 문자열 더하기를 이용한다.   
 > 이렇게 되면 URL 인코딩이 되지 않으므로 위험성이 존재한다. 따라서 `RedirectAttributes`를 사용해야 함
+
+<br>
+
+## [RedirectAttribute]
+상품저장은 됐지만 고객 입장에서 저장 메시지가 없어서 저장이 됐다는 확신이 안들 수 있다.
+저장 후 저장이 됐다는 메시지를 출력해보자
+
+**RedirectAttribute 이용**   
+이를 이용하면 URL 인코딩은 물론, PathVariable기능 및 쿼리 파라미터까지 처리해준다.
+```java
+ redirectAttributes.addAttribute("itemId", savedItem.getId());
+ redirectAttributes.addAttribute("status", true);
+ return "redirect:/basic/items/{itemId}";
+```
+* pathVariable 바인딩: `{itemId}`
+* 나머지는 쿼리 파라미터로 처리: `?status=true`
+
+이후 뷰 템플릿에서 아래 코드를 적절한 위치에 추가하면 메시지를 출력할 수 있다.   
+```html
+<h2 th:if="${param.status}" th:text="'저장 완료!'"></h2>
+```
+* param은 타임리프에서 쿼리 파라미터를 편리하게 조회할 수 있게 제공하는 기능이다.   
+ (원래는 컨트롤러에서 모델에 담고 직접 꺼내야함)
