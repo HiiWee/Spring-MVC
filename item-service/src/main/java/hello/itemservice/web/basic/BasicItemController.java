@@ -120,6 +120,15 @@ public class BasicItemController {
         return "redirect:/basic/items/{itemId}";
     }
 
+    // 상품 삭제
+    @DeleteMapping("/{itemId}/delete")
+    public String deleteForm(@PathVariable Long itemId, RedirectAttributes redirectAttributes) {
+        Item deletedItem = itemRepository.delete(itemId);
+        redirectAttributes.addAttribute("itemName", deletedItem.getItemName());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/basic/items";
+    }
+
     /**
      * 테스트용 데이터 추가
      */
