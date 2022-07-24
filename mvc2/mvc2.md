@@ -78,3 +78,27 @@ HTML은 <, >를 이용해 태그를 정의한다. 따라서 이러한 문자가 
 > **참고**   
 > **th:inline="none"** : 타임리프는 [[...]] 를 해석하기 때문에, 화면에 [[...]] 글자를 보여줄 수 없다.
 이 테그 안에서는 타임리프가 해석하지 말라는 옵션이다
+
+<br><br>
+
+## [변수 - SpringEL]
+타임리프에서 변수를 사용할 때는 변수 표현식을 사용한다.   
+**변수 표현식**: `${...}`
+
+해당 변수 표현식에는 스프링 EL이라는 스프링이 제공하는 표현식을 사용할 수 있다.
+
+### Spring EL
+**Object**
+* `user.username`: 자바빈 프로퍼티 접근법을 이용해 접근 (`user.getUsername()`)
+* `user['username']`: 위와 같음 -> `user.getUsername();`
+* `user.getUsername()`: getUsername() 메소드 직접 호출
+
+**List**
+* `users[0].username` -> List 첫번째 요소에서 자바 빈 프로퍼티 접근 (`list.get(0).getUsername()`)
+* `users[0]['username']`: 동일
+* `users[0].getUsername()`: List 첫번째 요소에서 getUsername() 메소드 직접 호출
+
+**Map**
+* `userMap['userA'].username`: 키를 이용해 찾은 유저를 자바 빈 프로퍼티 접근
+* `userMap['userA']['username']`: 위와 같음
+* `userMap['userA'].getUsername()`: Map에서 찾은 객체의 메소드 직접 호출
