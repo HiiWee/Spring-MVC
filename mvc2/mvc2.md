@@ -102,3 +102,21 @@ HTML은 <, >를 이용해 태그를 정의한다. 따라서 이러한 문자가 
 * `userMap['userA'].username`: 키를 이용해 찾은 유저를 자바 빈 프로퍼티 접근
 * `userMap['userA']['username']`: 위와 같음
 * `userMap['userA'].getUsername()`: Map에서 찾은 객체의 메소드 직접 호출
+
+<br><br>
+
+## [기본 객체들]
+타임리프는 기본 객체들을 제공함
+* `${#request}`
+* `${#response}`
+* `${#session}`
+* `${#servletContext}`
+* `${#locale}`
+
+HttpServletRequest의 경우 getParameter()를 이용해 데이터를 조회하므로 좀 더 편리한 편의 객체도 제공함   
+* HTTP 요청 파라미터: `param`
+  * `${param.paramData}`
+* HTTP 세션 접근: `session`
+  * `${session.sessionData}`
+* 스프링 빈 접근: `@`
+  * `${@helloBean.hello('Spring!')}`
