@@ -120,3 +120,25 @@ HttpServletRequest의 경우 getParameter()를 이용해 데이터를 조회하�
   * `${session.sessionData}`
 * 스프링 빈 접근: `@`
   * `${@helloBean.hello('Spring!')}`
+
+<br><br>
+
+## [유틸리티 객체와 날짜]
+타임리프는 문자, 숫자, 날짜, URI등을 편리하게 다루는 다양한 유틸리티 객체들을 제공함타임리프 유틸리티 객체들
+* `#message` : 메시지, 국제화 처리
+* `#uris` : URI 이스케이프 지원
+* `#dates` : java.util.Date 서식 지원
+* `#calendars` : java.util.Calendar 서식 지원
+* `#temporals` : 자바8 날짜 서식 지원
+* `#numbers` : 숫자 서식 지원
+* `#strings` : 문자 관련 편의 기능
+* `#objects` : 객체 관련 기능 제공
+* `#bools` : boolean 관련 기능 제공
+* `#arrays` : 배열 관련 기능 제공
+* `#lists` , `#sets` , `#maps` : 컬렉션 관련 기능 제공
+* `#ids` : 아이디 처리 관련 기능 제공, 뒤에서 설명
+
+필요할때 찾아서 사용하자! (타임리프 공식문서 `Utility Objects`)
+
+자바8 날짜를 사용하려면(`LocalDate`, `LocalDateTime`, `Instant`) 라이브러리를 따로 추가해야 한다.   
+하지만, 스프링 부트 타임리프 이용시 자동으로 라이브러리가 추가되고 통합됨
