@@ -66,6 +66,14 @@ public class BasicController {
         return "basic/date";
     }
 
+    @GetMapping("/link")
+    public String lind(Model model) {
+        model.addAttribute("param1", "data1");
+        model.addAttribute("param2", "data2");
+
+        return "basic/link";
+    }
+
 
     @Data
     static class User {

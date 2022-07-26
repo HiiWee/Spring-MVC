@@ -142,3 +142,19 @@ HttpServletRequest의 경우 getParameter()를 이용해 데이터를 조회하�
 
 자바8 날짜를 사용하려면(`LocalDate`, `LocalDateTime`, `Instant`) 라이브러리를 따로 추가해야 한다.   
 하지만, 스프링 부트 타임리프 이용시 자동으로 라이브러리가 추가되고 통합됨
+
+<br><br>
+
+## [URL 링크]
+타임리프에서 URL을 생성할때는 `@{...}`을 이용
+
+* 단순 URL
+  * `@{/hello}` -> `/hello`
+* 쿼리 파라미터
+  * `@{/hello(param1=${param1}, param2=${param2})}` -> `/hello?param1=data1&param2=data2`
+  * `()` 사이에 있는 부분이 쿼리 파라미터로 처리
+* PathVariable(경로변수)
+  * `@{/hello/{param1}/{param2}(param1=${param1}`, `param2=${param2})}` -> `/hello/data1/data2`
+  * URL 경로에 변수가 있으면 ()부분이 경로 변수로 처리
+* 경로변수 + 쿼리 파라미터 같이 사용
+  * `@{/hello/{param1}(param1=${param1}, param2=${param2})}` -> /hello/data1?param2=data2
