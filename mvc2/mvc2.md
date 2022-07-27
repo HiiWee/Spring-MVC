@@ -180,3 +180,19 @@ HttpServletRequest의 경우 getParameter()를 이용해 데이터를 조회하�
   * `조건식`: 자바의 조건식과 유사(3항 연산자)
   * `Elvis 연산자`: 조건식의 편의 버전
   * `No-Operation`: Elvis에서 `?:` 뒤에 값이 `_`라면 타임리프가 실행되지 않는것처럼 동작하여, HTML내용 그 자체를 보여준다.(코드 확인)
+
+<br><br>
+
+## [속성 값 설정]
+**타임리프 태그 속성 설정(Attribute)**   
+* 주로 HTML 태그에 `th:*` 속성 지정하는 방식으로 동작, 이는 기존 속성을 대체하고 없다면 새로 만든다.
+
+**속성 추가**   
+* `th:attrappend` : 속성 값의 뒤에 값을 추가한다.   
+* `th:attrprepend` : 속성 값의 앞에 값을 추가한다.   
+* `th:classappend` : class 속성에 자연스럽게 추가한다.(띄어쓰기 포함한 편의 기능)   
+
+**checked 처리**   
+* 기본 HTML은 checked 속성이 있다면 해당 값이 true, false 상관 없이 자동적으로 checked 처리가 된다.   
+이를 편리하게 사용하기 위해 `th:checked`이용
+* 만약 th:checked의 값이 false라면 checked 속성 자체를 삭제해 자동으로 checked 되는것을 막아준다.
