@@ -196,3 +196,25 @@ HttpServletRequest의 경우 getParameter()를 이용해 데이터를 조회하�
 * 기본 HTML은 checked 속성이 있다면 해당 값이 true, false 상관 없이 자동적으로 checked 처리가 된다.   
 이를 편리하게 사용하기 위해 `th:checked`이용
 * 만약 th:checked의 값이 false라면 checked 속성 자체를 삭제해 자동으로 checked 되는것을 막아준다.
+
+<br>
+
+## [반복]
+`th:each`를 이용한 반복문
+
+**반복기능**   
+`<tr th:each="user : ${users}">`: 컬렉션에서 값을 하나씩 꺼내어 user에 담아 반복문을 돈다.   
+List 및 배열 혹은 Java.util.Iterable, java.util.Enumeration을 구현한 모든 객체를 사용할 수 있음   
+(Map도 사용가능 Map은 Map.Entry가 담긴다)
+
+**반복 상태 유지**   
+`<tr th:each="user, userStat : ${users}">`   
+두 번째 파라미터로 반복의 상태를 확인할 수 있다. 이는 생략가능하며 생략시 지정 변수명 + 'Stat'으로 이름이 정해진다.
+
+**반복 상태 종류**
+* index: 0부터 시작함
+* count: 1부터 시작
+* size: 전체 사이즈
+* even, odd: 홀 짝
+* first, last: 처음 끝
+* current: 현재 객체
