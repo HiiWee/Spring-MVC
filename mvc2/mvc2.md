@@ -253,3 +253,45 @@ HTML 주석 + 약간의 구문
 타임리프는 HTML 태그 안에서 속성으로 기능을 사용하는데,    
 만약 div 태그 2개를 반복문을 돌려야 하는 애매한 상황인 경우에 th:block 태그로 이 둘을 묶어서 block 태그안에 th:each를 사용할 수 있다.   
 이렇게 되면 실제 렌더링 이후에는 `<th:block>`은 제거된다.
+
+<br>
+
+## [자바스크립트 인라인]
+타임리프에선 자바스크립트에서 타임리프를 편리하게 사용할 수 있는 자바스크립트 인라인 기능을 제공한다.   
+다음과 같이 적용 `<script th:inline="javascript">`
+
+### **자바스크립트 인라인의 이점**   
+1. **텍스트 렌더링**
+   * 텍스트 렌더링으로 `var username = [[${user.username}]];` 값을 넘기게 되면 다음과 같이 동작
+   * 인라인 사용전: `var username = userA;`
+   * 인라인 사용후: `var username = "userA";`
+
+문자일 경우에 자동으로 쌍따옴표를 붙여주고, 만약 숫자라면 숫자 그대로 렌더링 한다.   
+만약 문제가 될 수 있는 "," 같은 문자들은 자동적으로 이스케이프 처리 해줌
+
+2. **자바스크립트 내추럴 템플릿**
+   * 타입리프에서 HTML 파일을 직접 열어도 내추럴 템플릿이 동작하는 것처럼 자바스크립트 인라인도 이를 지원해준다.
+   * `var username2 = /*[[${user.username}]]*/ "test username";`
+   * 인라인 사용전: `var username2 = /*userA*/ "test username";`
+   * 인라인 사용후: `var username2 = "userA";`
+
+인라인을 사용하면 주석 부분이 제거 되고 "userA" 값이 렌더링 되어 입력된다.
+
+3. **객체**
+   * 타임리프의 자바스크립트 인라인 기능을 이용하면 객체를 JSON으로 자동 변환해준다.
+   * `var user = [[${user}]];`
+   * 인라인 사용전: `var user = user의 toString()값이 들어감`
+   * 인라인 사용후: `var user = {"username":"userA", "age":10};` (JSON)
+
+### 자바스크립트 인라인 each
+```html
+<!-- 자바스크립트 인라인 each -->
+<script th:inline="javascript">
+  
+ [# th:each="user, stat : ${users}"]
+ var user[[${stat.count}]] = [[${user}]];
+ [/]
+         
+</script>
+```
+반복문을 사용해야할 때 타임리프에서는 each기능을 script에서도 지원해준다.
