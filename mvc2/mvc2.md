@@ -349,3 +349,14 @@ HTML 주석 + 약간의 구문
 위의 레이아웃에선 반드시 추가 해야 하는 링크, 타이틀 태그등을 초기에 설정하고 넘겨주어야 한다.   
 반면에 넘겨줄만한 태그가 없는 경우 `thymeleaf-layout-dialect`를 이용해보자   
 참고글: https://inflearn.com/questions/278792
+
+<br>
+
+## [템플릿 레이아웃2]
+html 전체에 템플릿 레이아웃을 적용해보자
+
+`<html></html>` 태그에 `th:fragment` 속성을 정의하여 레이아웃으로 이용한다.   
+이후 필요한 내용들을 전달해 부분 변경함
+
+`layoutExtendMain.html`은 현재 페이지임 `<html>` 자체를 `th:replace`를 사용해 변경할 수 있다.   
+(layoutFile.html에 필요한 내용을 전달하며 html 자체를 layoutExtendMain.html로 변경)
