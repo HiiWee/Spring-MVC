@@ -295,3 +295,57 @@ HTML 주석 + 약간의 구문
 </script>
 ```
 반복문을 사용해야할 때 타임리프에서는 each기능을 script에서도 지원해준다.
+
+<br>
+
+## [템플릿 조각]
+타임리프는 웹 페이지 개발시 공통영역 처리를 위한 (상단, 하단, 좌측 카테고리 등) 템플릿 조각 및 레이아웃 기능을 지원함
+
+### **th:fragment**   
+다른곳에 포함되는 코드 조각   
+* `template/fragment/footer :: copy`: `template/fragment/footer.html` 템플릿에 있는 `th:fragment="copy"` 부분을
+  템플릿 조각으로 가져와 사용
+
+### 부분 포함 insert
+`<div th:insert="~{template/fragment/footer :: copy}"></div>`   
+현재 `div` 태그 내부에 해당 조각을 추가함
+
+### 부분 포함 replace
+`<div th:insert="~{template/fragment/footer :: copy}"></div>`   
+현재 div 태그를 대체함
+
+### 부분 포함 단순 표현식
+`<div th:replace="template/fragment/footer :: copy"></div>`   
+`~{...}`이 원칙이지만 단순 표현식을 지원함 하지만, 기본적으로 붙여주는것을 권장(코드 복잡해지면 오류 발생 가능성 높음)
+
+### 파라미터 사용
+파라미터를 전달해 동적으로 조각을 렌더링 할 수 있음   
+`<div th:replace="~{template/fragment/footer :: copyParam ('데이터1', '데이터2')}"></div>`
+
+<br>
+
+## [템플릿 레이아웃1]
+큰 모양이 정해져 있고, 내 코드를 해당 모양에 맞춰서 넣는 방법   
+(이전에 템플릿 조각은 모양이 정해져있고 해당 모양을 불러서 사용)
+
+공통적인 css, javascript를 설정할때 유용하다.
+
+### layoutMain.html
+이 페이지의 태그들을 base.html로 넘겨서 base.html을 레이아웃으로 이용
+즉, layoutMain.html의 요소들을 base.html의 원하는 부분에 추가한다.
+
+* `common_header(~{::title}, ~{::link})` 부분이 핵심
+  * `::title`은 현재 페이지의 titla 태그들을 전달한다.
+  * `::link`는 현재 페이지의 link 태그들을 전달
+
+### 결과
+* base.html의 title 부분이 layoutMain.html에서 전달한 부분으로 교체
+* base.html의 공통부분은 유지 되고, layoutMain.html에서 추가 부분에 전달한 link 태그들이 포함됨
+
+> 결과적으로 레이아웃 개념을 두고, 레이아웃에 필요한 코드 조각을 전달해서 완성    
+> 헷갈린다면 코드를 살펴보고 실행해서 다시 이해하자
+
+**[참고]**   
+위의 레이아웃에선 반드시 추가 해야 하는 링크, 타이틀 태그등을 초기에 설정하고 넘겨주어야 한다.   
+반면에 넘겨줄만한 태그가 없는 경우 `thymeleaf-layout-dialect`를 이용해보자   
+참고글: https://inflearn.com/questions/278792
