@@ -372,7 +372,7 @@ https://www.thymeleaf.org/doc/tutorials/3.0/thymeleafspring.html
 * 스프링 SpringEL 문법 통합
 * `${@myBean.doSomething()}` 처럼 스프링 빈 호출 지원
 * 편리한 폼 관리 위한 추가 속성
-  * `th:object`
+  * `th:object` (기능 강화, 폼 커맨드 객체 선택)
   * `th:field`, `th:errors`, `th:errorclass`
 * 폼 컴포넌트 기능
   * checkbox, radio button, List 등을 편리하게 사용할 수 있는 기능 지원
@@ -383,3 +383,25 @@ https://www.thymeleaf.org/doc/tutorials/3.0/thymeleafspring.html
 Spring을 사용하면 타임리프 관련 설정들을 모두 직접 해주어야 하지만, Spring Boot는 DI를 통해 초기에
 자동으로 설정을 완료해줌
 * 수동 설정: https://www.thymeleaf.org/doc/tutorials/3.0/thymeleafspring.html#the-springstandard-dialect
+
+<br><br>
+
+## [입력 폼 처리]
+타임리프 지원 기능을 통해 등록 폼, 수정 폼을 효율적으로 변경할 수 있음
+
+1. **`th:object`를 통해 커맨드 객체를 지정(주로 form 태그에 지정하여 사용)**   
+2. **`*{...}`: 선택 변수식을 통해 커맨드 객체에 접근할 수 있다.**   
+3. **`*{...}`은 주로 `th:field`와 같이 사용하는데 이렇게 하면 id, name, value 속성을 자동으로 처리해준다**
+
+```html
+폼 태그에 커맨드 객체 지정
+<form action="item.html" th:action th:object="${item}" method="post">
+    렌더링 전
+    <input type="text" th:field="*{itemName}" />
+    렌더링 후
+    <input type="text" id="itemName" name="itemName" th:value="*{itemName}" />
+</form>
+```
+* `th:field`는 `id`, `name`, `value`속성을 자동으로 만들어주는데 th:field에서 지정한 변수 이름 및 값과 같다.
+
+th:object, th:field는 검증 부분에서 그 효과가 더욱 부각된다. 잘 알아두자!
