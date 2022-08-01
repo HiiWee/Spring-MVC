@@ -360,3 +360,26 @@ html 전체에 템플릿 레이아웃을 적용해보자
 
 `layoutExtendMain.html`은 현재 페이지임 `<html>` 자체를 `th:replace`를 사용해 변경할 수 있다.   
 (layoutFile.html에 필요한 내용을 전달하며 html 자체를 layoutExtendMain.html로 변경)
+
+<br><br>
+
+# <타임리프 - 스프링 통합과 폼>
+## [타임리프 스프링 통합]
+타임리프는 스프링 통합 메뉴얼도 제공해줌: 
+https://www.thymeleaf.org/doc/tutorials/3.0/thymeleafspring.html
+
+**스프링 통합으로 제공하는 기능**
+* 스프링 SpringEL 문법 통합
+* `${@myBean.doSomething()}` 처럼 스프링 빈 호출 지원
+* 편리한 폼 관리 위한 추가 속성
+  * `th:object`
+  * `th:field`, `th:errors`, `th:errorclass`
+* 폼 컴포넌트 기능
+  * checkbox, radio button, List 등을 편리하게 사용할 수 있는 기능 지원
+* 스프링의 메시지, 국제화 기능의 편리한 통합
+* 스프링의 검증, 오류 처리 통합
+* 스프링의 변환 서비스 통합(ConversionService)
+
+Spring을 사용하면 타임리프 관련 설정들을 모두 직접 해주어야 하지만, Spring Boot는 DI를 통해 초기에
+자동으로 설정을 완료해줌
+* 수동 설정: https://www.thymeleaf.org/doc/tutorials/3.0/thymeleafspring.html#the-springstandard-dialect
