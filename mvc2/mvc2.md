@@ -424,3 +424,36 @@ th:object, th:field는 검증 부분에서 그 효과가 더욱 부각된다. �
   * 일반 배송
   * 느린 배송
   * 셀렉트 박스로 하나만 선택할 수 있다.
+
+<br><br>
+
+## [체크박스 - 단일1]
+일반적인 HTML 체크박스는 다음과 같다   
+`<input type="checkbox" id="open" name="open" class="form-check-input">`   
+체크박스의 속성값은 `on`으로 전송되는데 스프링은 `on`글자를 `true`타입으로 변환해준다.(**스프링 타입 컨버터**)
+
+체크박스를 선택하고 POST 전송 한 값과, 선택 해제하고 한 값을 서버에서 확인하면 다음과 같다.
+* 체크선택: `true`
+* 체크해제: `null` (속성이 Wrapper 클래스여야함)
+
+여기서 문제가 되는 부분은 체크박스를 선택하지 않고 POST 전송을하면 메시지바디에 `open`이라는 필드 자체가
+서버로 전송되지 않는다.(속성 값 뿐만 아니라 이름까지도)
+
+### **HTML checkbox**   
+HTML 체크박스는 선택이 안되면 클라이언트에서 서버로 값 자체를 보내지 않음   
+**따라서 수정과 같은 상황에서 체크 -> 체크 해제하면 값 자체가 넘어가지 않아 수정 사항 없음으로 판단할 소지가 있다.**
+
+### **스프링 MVC의 약간의 트릭**   
+hidden 필드로 `_propertyName`으로 name값을 주고 기존 체크박스에 같이 붙여준다.
+```html
+<input type="checkbox" id="open" name="open" class="form-check-input">
+<input type="hidden" name="_open" value="on"> <!-- 히든 필드 추가 -->
+```
+이렇게 되면 체크를 하면 `_open`, `open` 둘 다 `on`이라는 값이 전송되고,   
+체크 해제를 하면 `_open`만 `on`이라는 값이 전송된다.
+* 체크선택: `true`
+* 체크해제: `false`
+
+Spring MVC는 이 둘의 차이를 이용해 체크를 하면 `true`를 하지 않으면 `false`를 저장한다.
+
+> 참고: HTTP 요청 메시지 로깅(application.properties 속성): `logging.level.org.apache.coyote.http11=debug`
