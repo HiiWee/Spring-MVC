@@ -457,3 +457,30 @@ hidden 필드로 `_propertyName`으로 name값을 주고 기존 체크박스에 
 Spring MVC는 이 둘의 차이를 이용해 체크를 하면 `true`를 하지 않으면 `false`를 저장한다.
 
 > 참고: HTTP 요청 메시지 로깅(application.properties 속성): `logging.level.org.apache.coyote.http11=debug`
+
+<br><br>
+
+## [체크박스 - 단일2]
+히든필드를 일일이 추가해 주는 작업은 번거로움, 타임리프 제공 폼을 이용하면 이런 부분을 자동으로 처리할 수 있다.
+
+```html
+<input type="checkbox" id="open" name="open" class="form-check-input">
+<input type="hidden" name="_open" value="on"> <!-- 히든 필드 추가 -->
+```
+다음과 같이 변경할 수 있다.
+
+```html
+<input type="checkbox" id="open" th:field="*{open}" class="form-check-input">
+```
+
+**HTML 폼에서 자동생성 확인**   
+타임리프를 렌더링하여 결과를 보면 체크박스의 히든 필드 관련 부분도 함께 해결해준다.   
+(이 부분은 form을 등록하기 전 상태에서 _open이 보이는것이지 등록하여 서버에 전송을 한뒤에는 히든태그가 아니라 결과만 보인다.)
+
+**타임리프의 체크 확인**   
+`checked="checked"`   
+체크 박스에서 판매 여부를 선택해 저장하면 조회시 checked 속성이 추가된다, 타임리프의 th:field를 사용하면
+값이 true인 경우만 체크를 자동으로 처리해준다.
+
+> 참고: 체크가 되든 안되든 th:value의 값은 항상 true이다. 따라서 서버는 value값을 무시하고(value="true"가 디폴트)
+> 서버상의 true, false는 checked 태그로만 확인한다.
