@@ -523,3 +523,28 @@ Spring MVC는 이 둘의 차이를 이용해 체크를 하면 `true`를 하지 �
 th:field에 지정한 값과, th:value의 값을 비교해 th:value에 있는 key값이 th:field의 item.regions에 존재하면   
 checked 표시를 한다.
 
+<br><br>
+
+## [라디오 버튼]
+라디오 버튼은 여러 선택지 중 하나를 선택할 떄 사용된다.   
+Enum을 통해 만든 `ItemType`을 활용한다.
+
+* 상품 종류
+  * 도서, 식품, 기타
+  * 라디오 버튼으로 하나만 선택할 수 있다.
+
+<br>
+
+
+**여기서도 @ModelAttribute를 이용해 enum 정보를 배열로 Model에 추가**
+
+### 라디오 버튼에서 아무것도 선택하지 않으면 NULL
+라디오 버튼은 이미 선택이 되어 있다면 수정할때도 반드시 하나를 선택하도록 되어 있으므로 체크박스와 달리   
+NULL값 방지를 위한 별도의 히든 필드를 사용할 필요 없음
+
+
+**타임리프에서 ENUM 직접 접근**   
+```html
+<div th:each="type : ${T(hello.itemservice.domain.item.ItemType).values()}">
+```
+스프링EL 문법으로 ENUM을 직접 사용 할 수 있음, 하지만 패키지의 위치 변경과 같은 변경사항에 취약함
