@@ -592,3 +592,69 @@ item.quantity=수량
 * 사용자가 언어 선택 + 쿠키
 
 메시지 및 국제화 기능은 직접 처리할 수 도 있지만, 스프링이 메시지와 국제화 기능을 편리하게 통합하여 제공해준다.
+
+<br><br>
+
+## [스프링 메시지 소스 설정]
+
+스프링은 기본적인 메시지 관리 기능을 제공한다.
+
+메시지 관리 기능은 스프링 제공 `MessageSource`를 스프링 빈으로 등록해야함   
+이는 인터페이스며 따라서 구현체인 ResourceBundleMessageSource를 스프링 빈으로 등록해야함
+
+### 직접등록
+
+```java
+@Bean
+public MessageSource messageSource(){
+        ResourceBundleMessageSource messageSource=new
+        ResourceBundleMessageSource();
+        messageSource.setBasenames("messages","errors");
+        messageSource.setDefaultEncoding("utf-8");
+        return messageSource;
+        }
+```
+
+* `basenames` : 설정 파일의 이름을 지정한다.
+  * `messages` 로 지정하면 `messages.properties` 파일을 읽어서 사용한다.
+  * 추가로 국제화 기능을 적용하려면 `messages_en.properties` ,`messages_ko.properties` 와 같이
+  파일명 마지막에 언어 정보를 주면된다. 만약 찾을 수 있는 국제화 파일이 없으면
+  `messages.properties` (언어정보가 없는 파일명)를 기본으로 사용한다.
+  * 파일의 위치는 `/resources/messages.properties` 에 두면 된다.
+  * 여러 파일을 한번에 지정할 수 있다. 여기서는 `messages` , `errors` 둘을 지정했다.
+* `defaultEncoding` : 인코딩 정보를 지정한다. utf-8 을 사용하면 된다.
+
+스프링 부트를 이용하면 위 과정을 간단하게 자동으로 `MessageSouce`를 자동적으로 빈으로 등록한다.
+
+<br>
+
+### 스프링 부트 메시지 소스 설정
+`application.properties` 밑에   
+`spring.meessages.basename=messages,config.i18n.messages`
+
+<br>
+
+**스프링 부트 메시지 소스 기본값**   
+`spring.messages.basename=messages`   
+
+MessageSource 스프링 빈으로 등록하지 않고, 스프링 부트와 관련된 별도의 설정을 하지 않으면 `messages`라는 이름으로 기본등록됨
+따라서 다음 파일만 등록하면 자동인식 됨
+* messages_en.properties
+* messages_ko.properties
+* messages.properties
+
+<br>
+
+**한글과 영어용 파일을 resources/ 아래에 만들고 다음을 등록하자**
+* messages.properties
+* messages_en.properties
+
+```html
+# 한글
+hello=안녕
+hello.name=안녕 {0}
+
+# 영어
+hello=hello
+hello.name=hello {0}
+```
