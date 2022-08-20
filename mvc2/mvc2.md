@@ -616,7 +616,7 @@ public MessageSource messageSource(){
 ```
 
 * `basenames` : 설정 파일의 이름을 지정한다.
-  * `messages` 로 지정하면 `messages.properties` 파일을 읽어서 사용한다.
+  * `messages` 로 지정하면 `messages.properties` 파일을 읽어서 사용한다.(위 예시는 errors.properties도 읽음)
   * 추가로 국제화 기능을 적용하려면 `messages_en.properties` ,`messages_ko.properties` 와 같이
   파일명 마지막에 언어 정보를 주면된다. 만약 찾을 수 있는 국제화 파일이 없으면
   `messages.properties` (언어정보가 없는 파일명)를 기본으로 사용한다.
@@ -658,3 +658,17 @@ hello.name=안녕 {0}
 hello=hello
 hello.name=hello {0}
 ```
+
+<br><br>
+
+## [스프링 메시지 소스 사용]
+
+스프링이 제공하는 메시지 소스를 사용하기 위해선 `MessageSource interface`를 사용한다.
+
+이곳에서 제공해주는 메소드는 `String getMessage()`로 코드를 포함한 일부 파라미터로 메시지를 읽어오는 기능을 제공함
+
+사용방법은 `MessageSourceTest`를 참고
+
+* 다음과 같은 상황에선 default 국제화 파일을 선택한다(`messages.properties`)
+  * message.getMessage("hello", null, Locale.KOREA): Locale 정보가 있지만, message_ko.properties 파일이 없으므로
+    default인 messages.properties를 사용한다.
