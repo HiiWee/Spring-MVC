@@ -686,3 +686,22 @@ hello.name=hello {0}
 **파라미터는 다음과 같이 사용할 수 있다.**
 * messages.properties: `hello.name=안녕 {0}`
 * `<p th:text="#{hello.name(${item.itemName})}"></p>`
+
+<br><br>
+
+## [웹 애플리케이션에 국제화 적용하기]
+웹 애플리케이셔넹 국제화를 적용해 영어 메시지를 추가해보자
+
+단순히 이전시간에 적용하였으므로, messages_en.properties에 영어로 된 태그 이름을 동일하게 추가하고
+서버를 시작한 뒤 언어 설정을 변경해주면 된다.
+
+**이렇게 간단하게 사용할 수 있는 이유?**   
+* request-header를 보면 `Accept-Language`헤더에서 언어 설정을 변경하게 되면 우선순위의 언어들이 변경된다.   
+* 메시지 기능은 테스트를 했을때 봤듯이 Locale 정보를 알아야 하고, 스프링은 이런 Locale을 선택할때
+  `Accept-Language` 헤더의 값을 이용하여 선택하게 된다.
+
+**LocaleResolver**   
+스프링은 Locale 선택 방식을 변경할 수 있게 `LocaleResolver` 인터페이스를 제공한다.   
+여기서 기본 구현체는 `Accept-Language`를 활용하는 `AcceptHeaderLocaleResolver`를 이용한다.
+> Locale 선택 방식을 변경하길 원한다면 LocaleResolver의 구현체를 변경해서 쿠키 혹은 세션 기반의 Locale 선택기능을
+> 사용할 수 있다.
