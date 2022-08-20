@@ -672,3 +672,17 @@ hello.name=hello {0}
 * 다음과 같은 상황에선 default 국제화 파일을 선택한다(`messages.properties`)
   * message.getMessage("hello", null, Locale.KOREA): Locale 정보가 있지만, message_ko.properties 파일이 없으므로
     default인 messages.properties를 사용한다.
+
+<br><br>
+
+## [웹 애플리케이션에 메시지 적용하기]
+
+타임리프에 실제 메시지를 적용하기 위해서는 다음과 같은 표현식을 이용
+* `#{...}`
+  * 주로 변하지 않는 태그들의 이름을 등록하기 때문에 `th:text`와 조합해서 사용한다. 
+  
+<br>
+
+**파라미터는 다음과 같이 사용할 수 있다.**
+* messages.properties: `hello.name=안녕 {0}`
+* `<p th:text="#{hello.name(${item.itemName})}"></p>`
