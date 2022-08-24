@@ -743,3 +743,86 @@ hello.name=hello {0}
 ## [검증 직접 처리 - 소개]
 상품등록을 실패하게 되면(상품명 미기입, 가격 및 수량이 미달이거나 초과) 서버 검증 로직이 실패해야 한다.   
 검증로직이 실패한 경우, 고객에게 다시 상품 등록 폼을 보여주고, 어떤 값이 잘못되었는지 알려줘야 함
+
+<br><br>
+
+## [검증 직접 처리 - 개발]
+
+### 상품 등록 검증
+
+* 검증 오류 : HashMap을 이용해 보관(Key, Value)
+  * StringUtils 객체를 이용해 값을 확인후 없다면 담는다.
+* 글로벌 검증: 특정 필드가 아닌 복합 룰 검증도 해야할수 있다.
+  * `가격 * 수량의 합은 10000만 이상`
+* 검증이 실패하면 다시 입력폼으로
+  > 상품등록 검증에 실패하면 현재 페이지를 다시 요청한다.   
+    그런데 여기서 궁금한 부분은 페이지가 다시 요청되었는데 어떻게 이전에 입력한 값이 남아있을까?
+  >    * `@ModelAttribute`의 자동 `Model.addAttribute()`으로 주입
+  >      * 우리는 `GetMapping`때 빈 객체를 만들어서 form 데이터로 넘겨주었다.
+  >      * 사용자가 `POST` 요청을 하게되면 빈 객체에 사용자가 입력한 값이 저장되어 `@ModelAttribute`로 넘어오게 되는데
+  >      * 이때 `@ModelAttribute`는 `Model`에 자동으로 해당 객체를 추가해주기 때문에 오류로 인해 해당 페이지를 재 요청하면
+  >      * 사용자가 입력한 값이 그대로 남아있음
+  >    * 혹은 PRG를 이용하지 않고, 다시 POST요청을 하게되어 이전 값이 남아있을 가능성도 존재한다.
+
+<br>
+
+### **참고: Safe Navigation Operator**   
+```html
+<div>
+    <label for="itemName" th:text="#{label.item.itemName}">상품명</label>
+    <input type="text" id="itemName" th:field="*{itemName}"
+           th:class="${errors?.containsKey('itemName')} ? 'form-control field-error' : 'form-control'"
+           class="form-control" placeholder="이름을 입력하세요">
+    <div class="field-error" th:if="${errors?.containsKey('itemName')}" th:text="${errors['itemName']}">
+        상품명 오류
+    </div>
+</div>
+```
+위의 HTML 코드에서 다음 부분을 살펴보자   
+* `th:class="${errors?.containsKey('itemName')} ? 'form-control field-error' : 'form-control'"` 
+
+`th:if`를 통해 오류가 존재하면 오류를 표시하기 위한 클래스(`form-control filed-error`)를 가진 태그로 대체된다.   
+한가지 다른점은 `${errors?.containsKey(...)`에서 `?`가 어떤 의미인지 헷갈릴 수 있다.   
+위의 코드는 등록폼에서 가져왔는데(addForm.html) 등록폼에 진입한 시점(GET)일때는 `errors` 인스턴스가 아직 생성되기 이전이다.
+따라서 `null`값을 가지게 되고, 기존의 `errors.containsKey()`를 호출하면 `NPE`가 발생한다.  
+
+여기서 `errors?.containsKey()`는 `errors`가 `null`일때 `NPE`대신 null을 반환한다. `itemName`을 조회할 수 없고,   
+th:if 에서 null 은 실패로 처리되므로 오류 메시지가 출력되지 않는다
+> 이는 Spring EL 문법 : https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#expressions-operator-safe-navigation
+
+<br>
+
+### `classappend`를 활용해 좀 더 편리하게 HTML 필드 오류 처리하기   
+```html
+<input type="text" id="itemName" th:field="*{itemName}"
+           th:class="${errors?.containsKey('itemName')} ? 'form-control field-error' : 'form-control'"
+           class="form-control" placeholder="이름을 입력하세요">
+```
+위의 코드를 다음과 같이 간단하게 사용할 수 있다.
+
+```html
+<input type="text" id="itemName" th:field="*{itemName}"
+           th:classappend="${errors?.containsKey('itemName')} ? 'field-error' : _" 
+           class="form-control" placeholder="이름을 입력하세요">
+```
+`classappend`를 활용해 해당 필드에 오류가 존재하면 `field-error`클래스를 기존 클래스에 더하여 폼의 색상을 경고 색상으로 변경   
+값이 없다면 `_` == `No-Operation`을 사용해서 아무 작업도 하지않음
+
+
+### 정리
+1. 검증 오류 발생 -> 입력 폼 다시 보여줌
+2. 검증 오류들을 고객들에게 안내해서 다시 입력할 수 있게끔 함
+3. 검증 오류가 발생해도 입력데이터 소실되지 않음
+
+<br>
+
+### 문제점
+* 뷰 템플릿에서의 많은 중복 처리 --> 비슷함
+* 타입 오류 처리 불가
+* `Integer`타입의 `price`, `quantity`인 가격과 수량에 Integer 타입 이상의 값을 넣거나 해당 타입이 아닌 문자열을 입력하면   
+  오류가 `Controller`를 거치지 않고 400오류(클라이언트 오류) 반환됨
+  > ArgumentResolver에서 @ModelAttribute에 해당 인스턴스를 생성하고 입력값을 인스턴스에 setXXX를 통해 넣지만,   
+    입력값의 데이터와 필드의 자료형이 맞지 않아 Controller 진입전에 오류가 반환된다.
+* Integer 타입을 입력해야 하는 부분에 다른 자료형을 입력해 타입 오류가 발생해도 고객이 입력한 데이터는   
+  다시 고객 화면에 남겨야 고객이 인지할 수 있음, 하지만 `Integer`타입으로 바인딩할 수 없다.
+* 결국 고객 입력 데이터 값도 별도로 관리 되어야 함
