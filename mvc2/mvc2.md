@@ -879,3 +879,36 @@ BindingResult 사용 후
             </div>
         </div>
 ```
+
+<br><br>
+
+## [BindingResult2]
+BindingResult에 대해 좀 더 자세히 알아보자
+
+* 스프링이 제공하는 검증 오류 보관 객체, 검증 오류 발생시 BindingResult 객체에 보관
+* `@ModelAttribute`에 데이터 바인딩 오류 발생시 `BindingResult`가 존재하면 `Controller`를 호출한다.
+  * **만약 @ModelAttribute에 바인딩을 할 때 `타입`오류가 발생하면?**
+    * `BindingResult X` -> **400 오류** 발생, 컨트롤러 미호출, 오류 페이지 반환
+    * `BindingResult O` -> 오류 정보`(FieldError)`를 BindingResult에 담아 컨트롤러 정상 호출
+      * `스프링이 데이터 타입을 검사하다 FieldError 객체를 자동 생성해 오류 정보를 담고 컨트롤러를 호출한다.`
+
+<br>
+
+### BindingResult에 검증 오류 적용방법
+1. @ModelAttribute의 객체 타입 오류 등으로 인해 바인딩 실패시 스프링이 자동으로 `FieldError`를 생성해 `BindingResult`에 넣음
+2. 비즈니스 로직에서 검증이 필요한 경우, 개발자가 직접 생성해서 넣어준다.
+3. `Validator`사용
+
+> BindingResult는 검증할 대상 바로 뒤에 와야함(주로 `@ModelAttribute`뒤)    
+> BindingResult는 Model에 자동으로 포함됨(Model.addAttribute() 불필요)
+
+<br>
+
+### BindingResult와 Errors
+BindingResult는 인터페이스이며, Errors 인터페이스를 상속받음 따라서, Errors를 이용할 수 있지만 관례상 BindingResult 사용   
+대신에 Errors는 BindingResult보다 좀 더 단순한 오류 저장 및 조회 기능을 제공한다.   
+
+<br>
+
+### 현재의 문제점   
+타입 오류가 아닌 우리가 직접 작성한 비즈니스 검증 에러가 발생하면, 사용자가 입력한 데이터가 모두 사라진다.
