@@ -826,3 +826,56 @@ th:if 에서 null 은 실패로 처리되므로 오류 메시지가 출력되지
 * Integer 타입을 입력해야 하는 부분에 다른 자료형을 입력해 타입 오류가 발생해도 고객이 입력한 데이터는   
   다시 고객 화면에 남겨야 고객이 인지할 수 있음, 하지만 `Integer`타입으로 바인딩할 수 없다.
 * 결국 고객 입력 데이터 값도 별도로 관리 되어야 함
+
+<br><br>
+
+## V2 프로젝트
+## [BindingResult1]
+스프링이 제공하는 검증 오류 처리 방법, 핵심은 **BindingResult**
+
+Controller의 파라미터로 `BindingResult bindingResult`를 받아오는데 반드시 `@ModelAttribute` 다음으로 와야 한다.
+해당 `@ModelAttribute`에서 바인딩을할 때 오류가 발생하면 `bindingResult`에 담기기 때문
+
+* `BindingResult bindingResult`의 파라미터
+  * `ObjectName`: `@ModelAttribute` 이름
+  * `field`: 오류가 발생한 필드 이름
+  * `defaultMessage`: 오류 기본 메시지
+
+### 글로벌 오류 - ObjectError
+특정 필드를 넘어서는 오류가 존재하면 `Global Error`이다. 이때는 `FieldError`객체가 아닌 `ObjectError` 객체를 생성해   
+`bindingResult`에 담는다. 
+
+<br>
+
+### 타임리프 스프링 검증 오류 통합 기능
+기존의 복잡했던 타임리프의 코드를 `BindingResult` 객체를 활용해 편리하게 오류검증을 표현하는 기능을 제공해줌
+* `#fields`: `#fields`로 `BindingResult`가 제공하는 오류에 접근
+* `th:errors`: `Controller`에서  `BindingResult` 파라미터에 담긴 `field`에 오류가 있는 경우 출력, `th:if`의 편의버전
+* `th:errorclass`: `th:field`에서 지정한 최초 폼을 `GET할때 모델에 담아놨던 인스턴스`의 필드에 오류가 존재하면 `class` 정보를 추가
+
+<br>
+
+### HTML 코드의 변화
+```html
+BindingResult 사용 전
+        <div>
+            <label for="itemName" th:text="#{label.item.itemName}">상품명</label>
+            <input type="text" id="itemName" th:field="*{itemName}"
+                   th:class="${errors?.containsKey('itemName')} ? 'form-control field-error' : 'form-control'"
+                   class="form-control" placeholder="이름을 입력하세요">
+            <div class="field-error" th:if="${errors?.containsKey('itemName')}" th:text="${errors['itemName']}">
+                상품명 오류
+            </div>
+        </div>
+```
+```html
+BindingResult 사용 후
+        <div>
+            <label for="itemName" th:text="#{label.item.itemName}">상품명</label>
+            <input type="text" id="itemName" th:field="*{itemName}"
+                   th:errorclass="field-error" class="form-control" placeholder="이름을 입력하세요">
+            <div class="field-error" th:errors="*{itemName}">
+                상품명 오류
+            </div>
+        </div>
+```
