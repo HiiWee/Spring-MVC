@@ -912,3 +912,73 @@ BindingResult는 인터페이스이며, Errors 인터페이스를 상속받음 �
 
 ### 현재의 문제점   
 타입 오류가 아닌 우리가 직접 작성한 비즈니스 검증 에러가 발생하면, 사용자가 입력한 데이터가 모두 사라진다.
+
+<br><br>
+
+## [FieldError, ObjectError]
+* 현재 문제가 되는 사용자 입력 오류 메시지가 화면에 남도록 해야 한다.
+  * `예시`: 가격 1000원 미만 설정시 입력한 값 남아있어야 함
+* FieldError와 ObejctError에 대해 자세히 알아보자
+
+<br>
+
+### FieldError는 2가지의 생성자를 가진다.
+우리가 지금까지 이용한 방식은 다음과 같은 생성자
+```java
+public FieldError(String objectName, String field, String defaultMessage) {
+    this(objectName, field, null, false, null, null, defaultMessage);
+}
+```
+
+사용자가 입력한 값이 전송 후에도 다시 남아있기 위해서는 다음 생성자 이용
+```java
+  public FieldError(String objectName, String field, @Nullable Object rejectedValue, boolean bindingFailure,
+          @Nullable String[] codes, @Nullable Object[] arguments, @Nullable String defaultMessage) {
+
+      super(objectName, codes, arguments, defaultMessage);
+      Assert.notNull(field, "Field must not be null");
+      this.field = field;
+      this.rejectedValue = rejectedValue;
+      this.bindingFailure = bindingFailure;
+  }
+```
+* 파라미터 목록
+  * `objectName`: 오류가 발생한 객체 이름
+  * `field`: 오류 필드
+  * `rejectedValue`: 사용자가 입력한 값(거절된 값)
+  * `bindingFailure`: 타입 오류 같은 바인딩 실패(true)인지, 검증 실패(false)인지 구분하는 값
+  * `codes`: 메시지 코드
+  * `arguments`: 메시지에서 사용하는 인자
+  * `defaultMessage`: 기본 오류 메시지
+
+따라서 rejectedValue는 거절된 값 혹은 사용자가 입력한 값을 담게 되는데 다음과 같이 담긴다.
+
+1. **사용자 커스텀 검증에서 검증을 실패한 경우**
+   * 이말은 즉, `@ModelAttribute`까지는 성공했으므로 Item item 인스턴스에 필드의 값은 존재하지만,   
+     사용자의 검증 기준에 미치지 못해 생성된 `FieldError`의 r`ejectedValue`에 사용자가 입력한 값이 담겨지게 되고   
+     `view`로 해당 `FieldError`를 가진 `bindingResult`가 보내지게 되어 사용자가 자신이 입력한 값을 확인할 수 있다.
+2. **Integer 필드에 String 값이 들어와 `@ModelAttribute`바인딩이 실패하는 경우**
+   * 이 상황에선 `Spring`이 내부적으로 `typeMismatch`가 발생하게 되어 입력값의 타입을 변경하여 typeMismatch가 발생하기 전   
+     데이터인 사용자 입력값의 데이터를 알고 있게 되고, 해당 값을 이용해 `FieldError객체를 생성`하게 된다.
+   * 이후 BindingResult 객체에 담고 컨트롤러를 호출한다.
+   * 여기서 `사용자의 커스텀 검증`을 또 거치게 되면 또다른 FieldError 인스턴스가 bindingResult에 담기게 되지만,   
+     View에서 보이는건 `먼저 들어간 오류 데이터가 출력`하게 된다.
+   * 따라서 사용자는 `스프링의 typeMismatch 오류 담은 bindingResult를 마주`하게 된다.
+
+> 사용자 커스텀 검증의 경우 binding의 실패가 아니므로 bindingFailure는 false값을 준다.
+
+<br>
+
+### 타임리프의 사용자 입력 값 유지
+`th:field"*{price}"`   
+위의 코드는 똑똑하게 동작한다.
+* 정상 상황에선 Model 객체의 값을 사용한다.
+* 오류 발생 상황에선 FieldError에서 보관한 값을 사용하여 출력한다.
+
+따라서 잘못 입력된 사용자의 값을 전송 후에도 사용자가 다시 보고 확인할 수 있음
+
+<br>
+
+### 스프링 바인딩 오류 처리
+위에서 설명했듯이, 타입 오류로 인한 바인딩 실패시 스프링은 FieldError를 생성하며 사용자가 입력한 값을 넣는다.   
+이후 `BindingResult` 인스턴스에 담고 컨트롤러를 호출함, 따라서 타입 오류 같은 바인딩 실패시에도 사용자의 오류 메시지를 정상 출력한다.
