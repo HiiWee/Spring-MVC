@@ -1033,3 +1033,56 @@ Error 처리를 위한 errors.properties를 만들어 별도의 파일로 관리
   * `arguments`는 `Object[]`를 이용해 메시지의 `{0}`, `{1}` 같은 파라미터를 매칭한다.
 
 > `MessageSource`를 이용하므로 errors_en.properties를 이용하면 국제화 기능도 당연히 이용할 수 있음
+
+<br><br>
+
+## [오류 코드와 메시지 처리2]
+* FieldError, ObjectError는 다루기 번거로움
+* 오류 코드도 좀 더 자동화 할 수 있지 않을까?
+
+**컨트롤러에서 BindingResult 객체는 검증해야 할 객체인 Item item(`target`) 바로 다음에 온다.**   
+이 말은 BingingResult는 본인이 검증해야 할 객체인 `target`을 이미 알고있다는 의미이다.
+
+따라서 컨트롤러 최상단에(addErrors() 이전)로그를 이용해 다음을 찍어보면 실제 target 객체가 출력된다.
+```java
+log.info("objectName={}", bindingResult.getObjectName());
+log.info("target={}", bindingResult.getTarget());
+```
+
+<br>
+
+### rejectValue(), reject()
+`BindingResult`에서 제공하는 메서드로 `FieldError` 혹은 `ObjectError`를 직접 생성하지 않고, 좀 더 깔끔하게 검증오류를 처리할 수 있음
+
+```java
+// 기존 FieldError 인스턴스 직접 주입 방식
+bindingResult.addError(new FieldError("item", "price", item.getPrice(), false, new String[]{"range.item.price"}, new Object[]{1000, 1000000}, null));
+bindingResult.addError(new ObjectError("item", new String[]{"totalPriceMin"}, new Object[]{10000, resultPrice}, null));
+
+// rejectValue(), reject() 사용
+bindingResult.rejectValue("price", "range", new Object[]{1000, 1000000}, null);
+bindingResult.reject("totalPriceMin", new Object[]{10000, resultPrice}, null);
+```
+한눈에 봐도 코드량과 가독성이 확 개선되었다.   
+
+
+### rejectValue()
+```java
+void rejectValue(@Nullable String field, String errorCode,
+@Nullable Object[] errorArgs, @Nullable String defaultMessage);
+```
+* `field`: 오류 필드명
+* `errorCode`: 오류 코드(errors.messages에 등록된 코드가 아님, messageResolver를 위한 오류 코드)
+* `errorsArgs`: 오류 메시지에서 {0}을 치환하기 위한 값
+* `defaultMessage`: 기본 메시지
+
+> BindingResult는 어떤 객체를 대상으로 검증하는지 target을 이미 알고 있으므로 objectName이 없어도 됨   
+> `reject()`또한 앞의 내용과 동일하지만, 글로벌 에러를 처리한다.
+<br>
+
+**이전 코드와의 차이점**   
+FieldError()는 오류 코드(codes)를 `range.item.price`와 같이 모두 입력함   
+rejectValue()는 오류 코드(codes)를 `range`로 간단하게 입력
+> MessageCodesResolver가 이런 차이를 해결해준다.
+
+
