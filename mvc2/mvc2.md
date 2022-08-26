@@ -982,3 +982,54 @@ public FieldError(String objectName, String field, String defaultMessage) {
 ### 스프링 바인딩 오류 처리
 위에서 설명했듯이, 타입 오류로 인한 바인딩 실패시 스프링은 FieldError를 생성하며 사용자가 입력한 값을 넣는다.   
 이후 `BindingResult` 인스턴스에 담고 컨트롤러를 호출함, 따라서 타입 오류 같은 바인딩 실패시에도 사용자의 오류 메시지를 정상 출력한다.
+
+<br><br>
+
+## [오류 코드와 메시지 처리1]
+오류 메시지를 이전에 메시지, 국제화에서 사용한 properties를 이용해 체계적으로 관리할 수 있음
+
+* 오류 메시지의 관리 필요
+  * 다양한 곳에서 사용되는 오류가 많아지고 코드의 중복이 많아짐 -> 하나로 합쳐서 사용
+
+이전에 봤던 FieldError 생성자를 다시 살펴보면
+```java
+  public FieldError(String objectName, String field, @Nullable Object rejectedValue, boolean bindingFailure,
+          @Nullable String[] codes, @Nullable Object[] arguments, @Nullable String defaultMessage) {
+
+      super(objectName, codes, arguments, defaultMessage);
+      Assert.notNull(field, "Field must not be null");
+      this.field = field;
+      this.rejectedValue = rejectedValue;
+      this.bindingFailure = bindingFailure;
+  }
+```
+* 파라미터 목록
+  * `objectName`: 오류가 발생한 객체 이름
+  * `field`: 오류 필드
+  * `rejectedValue`: 사용자가 입력한 값(거절된 값)
+  * `bindingFailure`: 타입 오류 같은 바인딩 실패(true)인지, 검증 실패(false)인지 구분하는 값
+  * `codes`: 메시지 코드
+  * `arguments`: 메시지에서 사용하는 인자
+  * `defaultMessage`: 기본 오류 메시지
+
+`codes`, `arguments`를 이용해 오류 코드로 메시지를 찾기 위해 사용한다.   
+
+* application.properties 설정   
+Error 처리를 위한 errors.properties를 만들어 별도의 파일로 관리하기 위해 application.properties에 설정 추가   
+`spring.messages.basename=messages, errors`
+
+
+* errors.properties 설정
+  ```java
+  required.item.itemName=상품 이름은 필수입니다.
+  range.item.price=가격은 {0} ~ {1} 까지 허용합니다.
+  max.item.quantity=수량은 최대 {0} 까지 허용합니다.
+  totalPriceMin=가격 * 수량의 합은 {0}원 이상이어야 합니다. 현재 값 = {1}
+  ```
+  
+* Controller에서 적용하기
+  * `codes`는 `String[]`을 이용해 `errors.properties`의 key값을 입력한다.
+    * 배열로 여러값을 전달하여 순서대로 매칭해 처음 매칭되는 메시지가 출력됨
+  * `arguments`는 `Object[]`를 이용해 메시지의 `{0}`, `{1}` 같은 파라미터를 매칭한다.
+
+> `MessageSource`를 이용하므로 errors_en.properties를 이용하면 국제화 기능도 당연히 이용할 수 있음
