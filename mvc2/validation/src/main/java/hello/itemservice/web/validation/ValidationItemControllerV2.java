@@ -45,6 +45,7 @@ public class ValidationItemControllerV2 {
         return "validation/v2/addForm";
     }
 
+    // 기초적인 오류 처리
     // @PostMapping("/add")
     public String addItemV1(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
 

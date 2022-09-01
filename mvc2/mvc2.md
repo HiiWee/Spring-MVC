@@ -1104,3 +1104,82 @@ rejectValue()는 오류 코드(codes)를 `range`로 간단하게 입력
 만약 `required`와 같이 범용적인 오류 메시지만 존재하면 해당 메시지를 선택해서 사용한다.
 
 이렇게 하면 메시지의 추가 만으로 편리하게 개발할 수 있게 된다.
+
+<br><br>
+
+## [오류 코드와 메시지 처리4]
+**MessageCodesResolver**   
+테스트 코드를 이용해 `DefaultMessageCodesResolver.resolveMessageCodes(...)`을 실행하면   
+실제 검증 오류 코드로 메시지 코드들을 생성함(String[] codes)   
+* 주로 `ObjectError`, `FieldError`와 함께 사용한다.(`@Nullable String[] codes` 매개변수로)
+
+<br>
+
+**DefaultMessageCodesResolver의 기본 메시지 생성 규칙**
+
+**객체 오류**   
+다음 순서로 2가지 생성
+1. `code + "." + object name`
+2. `code`
+
+예시) 오류 코드: required, object name: "item"
+1. `required.item`
+2. `required`
+
+<br>
+
+**핃르 오류**
+4가지 메시지 코드 생성   
+1. `code + "." + object name + "." + field`
+2. `code + "." + field`
+3. `code + "." + field type`
+4. `code`
+
+예시) 오류 코드: typeMismatch, object name: "user", field: "age", field type: int
+1. "`typeMismatch.user.age`"
+2. "`typeMismatch.age`"
+3. "`typeMismatch.int`"
+4. "`typeMismatch`"
+
+<br>
+
+**동작 방식**
+* rejectValue(), reject()는 내부에서 MessageCodesResolver를 사용함 -> 여기서 메시지 코드들을 생성함
+  ```java
+  // 실제 AbstractBindingResult의 rejectValue()를 보면 다음과 같은 코드 존재
+  FieldError fe = new FieldError(getObjectName(), fixedField, newVal, false,
+                resolveMessageCodes(errorCode, field), errorArgs, defaultMessage);
+  
+  
+  // 여기서 resolveMessageCodes(...)를 들어가면 다음과 같이 사용한다.
+      @Override
+  public String[] resolveMessageCodes(String errorCode, @Nullable String field) {
+        return getMessageCodesResolver().resolveMessageCodes(
+                errorCode, getObjectName(), fixedField(field), getFieldType(field));
+  } 
+  ```
+* FieldError, ObjectError의 생성자를 보면, 오류 코드를 하나가 아니라 여러 오류 코드를 가질 수 있음
+  `MessageCodesResolver`를 통해서 생성된 순서대로 오류 코드를 보관한다.
+  ```java
+  public FieldError(String objectName, String field, @Nullable Object rejectedValue, boolean bindingFailure,
+            @Nullable String[] codes, @Nullable Object[] arguments, @Nullable String defaultMessage)
+  ```
+* 실제 `BindingResult`의 로그를 통해서 확인할 수 있다.   
+  `log.info("errors={}", bindingResult);`
+
+<br>
+
+**실제 자동 생성된 오류 코드**   
+* `FieldError`: `rejectValue("itemName", "required);` -> 4가지 오류 코드 자동 생성
+  * required.item.itemName
+  * required.itemName
+  * required.java.lang.String
+  * required
+
+* `ObjectError` `reject("totalPriceMin")` -> 2가지 오류 코드 자동 생성
+  * totalPriceMin.item
+  * totalPriceMin
+
+
+따라서 타임리프에서 화면을 렌더링할 때 `th:errors`가 실행되며, 이때 오류가 있다면 생성된 오류 메시지 코드를   
+순서대로 돌아가며 메시지를 찾음, 없다면 defaultMessage 출력
