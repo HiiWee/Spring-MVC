@@ -165,6 +165,7 @@ public class ValidationItemControllerV2 {
         return "redirect:/validation/v2/items/{itemId}";
     }
 
+    // 오류 코드의 자동화 -> BindingResult의 rejectValue(), reject()를 이용한 기존 코드의 단순화
     @PostMapping("/add")
     public String addItemV4(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
 
