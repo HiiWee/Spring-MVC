@@ -1152,7 +1152,7 @@ rejectValue()는 오류 코드(codes)를 `range`로 간단하게 입력
   
   
   // 여기서 resolveMessageCodes(...)를 들어가면 다음과 같이 사용한다.
-      @Override
+  @Override
   public String[] resolveMessageCodes(String errorCode, @Nullable String field) {
         return getMessageCodesResolver().resolveMessageCodes(
                 errorCode, getObjectName(), fixedField(field), getFieldType(field));
@@ -1183,3 +1183,51 @@ rejectValue()는 오류 코드(codes)를 `range`로 간단하게 입력
 
 따라서 타임리프에서 화면을 렌더링할 때 `th:errors`가 실행되며, 이때 오류가 있다면 생성된 오류 메시지 코드를   
 순서대로 돌아가며 메시지를 찾음, 없다면 defaultMessage 출력
+
+<br><br>
+
+## [오류 코드와 메시지 처리5]
+### 핵심, 구체적인 것 -> 덜 구체적인 것으로
+`MessageCodesResolver`는 `required.item.itemName`처럼 구체적인 것을 먼저 만들어주고,
+`required`처럼 덜 구체적인 것을 가장 나중에 만든다.
+
+<br>
+
+### 복잡하게 사용하는 이유?
+모든 오류 코드에 대해 메시지를 전부 정의하면 관리하기 어렵다. 따라서 크게 중요하지 않은 메시지들은 범용성있는
+덜 구체적인 것을 이용하고, 정말 중요한 메시지는 구체적으로 적어 사용하는것이 효과적이다.
+
+<br>
+
+### 객체 및 필드 오류를 나누고, 범용성에따라 필드 오류를 나눔
+`itemName`의 경우 `required` 검증 오류 메시지가 발생하면 다음 코드 순서대로 메시지가 생성됨
+1. `required.item.itemName`
+2. `required.item`
+3. `required.java.lang.String`
+4. `required`
+
+이렇게 생성된 메시지 코드 기반으로 `MessageSource`에서 찾는다.   
+구체적 -> 덜 구체적으로 찾음, 따라서 크게 중요하지 않은 오류는 기존의 것을 재활용하면 된다.
+
+<br>
+
+### ValidationUtils
+ValidationUtils를 이용하면 `Empty`, 공백등의 기능을 좀 더 간결하게 간단한 기능들을 사용할 수 있다.
+
+```java
+// 사용전
+if (!StringUtils.hasText(item.getItemName())) {
+    bindingResult.rejectValue("itemName", "required", "기본: 상품 이름은 필수입니다.");
+}
+
+// 사용후
+ValidationUtils.rejectIfEmptyOrWhitespace(bindingResult, "itemName", "required");
+```
+
+<br>
+
+**정리**
+1. rejectValue() 호출
+2. `MessageCodesResolver`를 사용해서 검증 오류 코드로 메시지 코드들을 생성
+3. `new FieldError()`를 생성하며 메시지 코드들을 보관
+4. **`th:errors`에서 메시지 코드들로 메시지를 순서대로 메시지에서 찾고, 노출한다.**
