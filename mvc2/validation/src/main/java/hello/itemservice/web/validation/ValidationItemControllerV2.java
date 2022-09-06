@@ -10,6 +10,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -25,6 +27,15 @@ public class ValidationItemControllerV2 {
 
     private final ItemRepository itemRepository;
     private final ItemValidator itemValidator;
+
+    // 요청이 들어올때마다 새로 만들어짐
+    // 컨트롤러 요청이 들어올때마다 검증기를 하나 넣어놓는다.
+    // 따라서 어떤 컨트롤러에서든 검증기를 적용할 수 있다. 하지만, 다른 컨트롤러 클래스는 적용 X
+    @InitBinder
+    public void init(WebDataBinder dataBinder) {
+        log.info("init binder {}", dataBinder);
+        dataBinder.addValidators(itemValidator);
+    }
 
     @GetMapping
     public String items(Model model) {
@@ -209,10 +220,28 @@ public class ValidationItemControllerV2 {
     }
 
     // 검증 코드의 분리 ItemValidator
-    @PostMapping("/add")
+    // @PostMapping("/add")
     public String addItemV5(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
 
         itemValidator.validate(item, bindingResult);
+
+        // bindingResult가 에러가 있으면
+        if (bindingResult.hasErrors()) {
+            log.info("errors={}", bindingResult);
+            // 또한 모델에 자동으로 bindingResult가 담겨서 넘어간다.
+            return "validation/v2/addForm";
+        }
+
+        // 성공 로직
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v2/items/{itemId}";
+    }
+
+    // WebDataBinder를 이용해 Validator 미리 넣어놓고 즉시 사용하기
+    @PostMapping("/add")
+    public String addItemV6(@Validated @ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
 
         // bindingResult가 에러가 있으면
         if (bindingResult.hasErrors()) {

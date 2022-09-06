@@ -1291,3 +1291,67 @@ itemValidator.validate(item, bindingResult);
 
 **그런데 굳이 Validator를 구현하지 않아도 검증이 충분히 가능할 것 같다. 왜 굳이 Validator를 구현하여   
 검증 코드를 작성할까?**
+
+
+<br><br>
+
+## [Validator 분리2]
+Validator 인터페이스를 제공하는 이유는 체계적으로 검증 기능을 도입하기 위해서이다.   
+또한 Validator 인터페이스를 사용해 검증기를 만든다면 스프링의 추가적인 도움을 받을 수 있다.
+
+<br>
+
+### WebDataBinder를 통해 사용
+`WebDataBinder`는 스프링의 파라미터 바인딩의 역할을 해주고, 검증 기능도 내부에 포함한다.
+
+`Controller`에 다음과 같은 코드를 삽입하면 해당 컨트롤러는 검증기를 자동 적용한다.   
+`@InitBinder`는 해당 컨트롤러만 영향을 주고 다른 클래스는 영향 X, 글로벌 설정이 따로 존재한다.
+```java
+@InitBinder
+public void init(WebDataBinder dataBinder) {
+    log.info("init binder {}", dataBinder);
+    dataBinder.addValidators(itemValidator);
+}
+```
+
+
+이후 검증을 적용하기 원하는 컨트롤러의 검증 대상 앞에 `@Validated` 어노테이션을 붙여주면 된다.
+```java
+public String addItemV6(@Validated @ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model)
+```
+
+<br>
+
+**동작 방식**   
+`@Validated`는 검증기를 실행하라는 어노테이션   
+해당 어노테이션을 보고 스프링은 `WebDataBinder`에 등록한 검증기를 찾아 실행한다.   
+그런데 `WebDataBinder`를 보면 여러 검증기를 등록할 수 있다.   
+이 때 `Validator`인터페이스의 `supports()` 메서드가 사용된다.
+
+
+<br>
+
+### 글로벌 설정 - 모든 컨트롤러에 적용
+```java
+@SpringBootApplication
+public class ItemServiceApplication implements WebMvcConfigurer {
+    
+    public static void main(String[] args) {
+        SpringApplication.run(ItemServiceApplication.class, args);
+    }
+    
+    @Override
+    public Validator getValidator() {
+        return new ItemValidator();
+    }
+    
+}
+```
+위와같이 적용하면 기존에 컨트롤러에 적용했던 @InitBinder를 주석처리해도 동작함
+
+### 검증시의 애노테이션(@Valid, @Validated)
+* @Valid: `javax.validation.@Valid`, 자바 표준 검증 애노테이션으로 따로 gradle의 의존관계 추가 필요
+  * implementation 'org.springframework.boot:spring-boot-starter-validation'
+* @Validated: 스프링 전용 애노테이션
+
+이 둘은 동일한 역할을 하지만, 약간의 차이가 존재한다.
