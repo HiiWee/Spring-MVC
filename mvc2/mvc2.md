@@ -1,4 +1,4 @@
-# <타임리프 - 기본 기능>
+\# <타임리프 - 기본 기능>
 ## [타임리프 소개]
 공식문서 잘보자!!
 
@@ -1231,3 +1231,37 @@ ValidationUtils.rejectIfEmptyOrWhitespace(bindingResult, "itemName", "required")
 2. `MessageCodesResolver`를 사용해서 검증 오류 코드로 메시지 코드들을 생성
 3. `new FieldError()`를 생성하며 메시지 코드들을 보관
 4. **`th:errors`에서 메시지 코드들로 메시지를 순서대로 메시지에서 찾고, 노출한다.**
+
+<br><br>
+
+## [오류 코드와 메시지 처리6]
+### 스프링이 직접 만든 오류 메시지 처리
+검증 오류의 종류
+1. 개발자가 직접 설정한 오류 코드 -> rejectValue() 직접 호출
+2. 스프링이 직접 검증 오류에 추가한 경우(주로 타입 Mismatch)
+
+지금까지 작성한 코드들은 개발자가 직접 설정한 오류에 대해서는 우리가 원하는 메시지를 출력했다.   
+하지만 Integer가 들어가야 할 자리에 String이 들어가 Binding 자체가 되지 않아 스프링이 내부적으로 만드는   
+타입 오류 같은 경우 typeMismatch가 발생하고, 조금 딱딱한 오류를 화면에 보여준다.
+
+실제 로그를 찍어보면 다음과 같이 나타난다.
+```html
+codes[typeMismatch.item.price,typeMismatch.price,typeMismatch.java.lang.Integer,typeMismatch]
+...
+Failed to convert property value of type java.lang.String to required type 
+java.lang.Integer for property price; nested exception is 
+java.lang.NumberFormatException: For input string: "A"
+```
+
+위의 codes를 보면 자바에서 자동적으로 생성한 메시지 코드를 이용해 우리가 임의의 메시지를 넣을 수 있다.
+1. `typeMismatch.item.price`
+2. `typeMismatch.price`
+3. `typeMismatch.java.lang.Integer`
+4. `typeMismatch`
+
+errors.properties에 추가
+```html
+#추가
+typeMismatch.java.lang.Integer=숫자를 입력해주세요.
+typeMismatch=타입 오류입니다.
+```
