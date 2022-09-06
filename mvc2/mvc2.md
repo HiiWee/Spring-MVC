@@ -1265,3 +1265,29 @@ errors.properties에 추가
 typeMismatch.java.lang.Integer=숫자를 입력해주세요.
 typeMismatch=타입 오류입니다.
 ```
+
+<br><br>
+
+## [Validator 분리1]
+**목표**   
+* 복잡한 검증 로직을 별도로 분리하자.
+
+현재 컨트롤러의 절반 이상의 코드가 검증 코드로 이루어짐 -> 분리의 필요성을 느낌   
+스프링은 `Validator`라는 인터페이스를 제공한다 이를 이용해서 검증로직을 분리해보자
+```java
+public interface Validator {
+    boolean supports(Class<?> clazz);
+    void validate(Object target, Errors errors);
+}
+```
+* `supports(Class<?> clazz)` : 해당 검증기를 지원하는 여부 확인
+* `validate(Object target, Errors errors)` : 검증 대상 객체와 BingingResult 넘겨서 검증
+
+Validator 인터페이스를 구현한 구현체를 컴포넌트로 등록하고 스프링 빈으로 주입받아 컨트롤러에서 사용하면   
+한 줄로 검증 코드를 줄일 수 있다.
+```java
+itemValidator.validate(item, bindingResult);
+```
+
+**그런데 굳이 Validator를 구현하지 않아도 검증이 충분히 가능할 것 같다. 왜 굳이 Validator를 구현하여   
+검증 코드를 작성할까?**
