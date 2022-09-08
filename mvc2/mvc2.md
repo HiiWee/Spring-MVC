@@ -1386,3 +1386,48 @@ public class Item {
 Bean Validation은 특정 구현체가 아닌 Bean Validation 2.0(JSR-380)이라는 기술 표준임   
 검증 애노테이션 및 여러 인터페이스의 모음(JPA가 표준이고 구현체로 Hibernate가 있는것과 같음)   
 Bean Validation의 일반적인 구현체는 Hibernate Validator가 있다.(ORM X)
+
+<br><br>
+
+## [Bean Validation - 시작]
+Bean Validation 기능 사용을 위해 의존관계를 추가하고 스프링과 통합하지 않고 순순한 Bean Validation 사용법을 알아보자
+
+<br>
+
+### Item 객체에 검증 어노테이션 달기
+**검증 애노테이션**
+* `@NotBlank` : 빈값 + 공백만 있는 경우를 허용하지 않는다.
+* `@NotNull` : null 을 허용하지 않는다.
+* `@Range(min = 1000, max = 1000000)` : 범위 안의 값이어야 한다.
+* `@Max(9999)` : 최대 9999까지만 허용한다.
+
+> 여기서 @Range를 제외한 나머지 애노테이션 3개는 특정 구현에 관계없이 지원해주는 표준 인터페이스이고   
+> @Range만 하이버네이트에서 제공하는 애노테이션이다.
+
+<br>
+
+### 테스트 하기
+```java
+    @Test
+    void beanValidation() {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+
+        Item item = new Item();
+        item.setItemName(" "); // 공백
+        item.setPrice(0);
+        item.setQuantity(10000);
+
+        Set<ConstraintViolation<Item>> violations = validator.validate(item);
+
+        for (ConstraintViolation<Item> violation : violations) {
+            System.out.println("violation = " + violation);
+            System.out.println("violation.getMessage() = " + violation.getMessage());
+        }
+    }
+```
+`Validation.buildDefaultValidatorFactory()`를 생성해 검증기를 하나 생성하고, Item인스턴스를 우리가 설정한 검증을 통과하지 못하게
+필드를 초기화 하고 검증기에 넣어 결과를 받아보면 검증 오류가 발생한 객체, 필드, 메시지 정보 등 여러정보 확인 가능하다.
+
+
+> 스프링은 이미 Bean Validator를 스프링에 완전히 통합하였으므로 편리하게 가져다 사용할 수 있다.
