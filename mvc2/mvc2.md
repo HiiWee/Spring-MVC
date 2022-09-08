@@ -1,4 +1,4 @@
-\# <타임리프 - 기본 기능>
+# <타임리프 - 기본 기능>
 ## [타임리프 소개]
 공식문서 잘보자!!
 
@@ -1355,3 +1355,34 @@ public class ItemServiceApplication implements WebMvcConfigurer {
 * @Validated: 스프링 전용 애노테이션
 
 이 둘은 동일한 역할을 하지만, 약간의 차이가 존재한다.
+
+<br><br>
+
+# <검증2 - Bean Validation>
+## [Bean Validation 소개]
+검증 기능을 매번 코드로 작성하기 -> 번거롭고, 비효율적   
+검증 로직의 대부분은 빈값, 특정 값 체크 같은 일반적 로직이므로 Bean Validation을 통해 간소화 가능
+
+```java
+// Bean Validation 사용 예시 코드
+public class Item {
+    private Long id;
+    
+    @NotBlank
+    private String itemName;
+    
+    @NotNull
+    @Range(min = 1000, max = 1000000)
+    private Integer price;
+    
+    @NotNull
+    @Max(9999)
+    private Integer quantity;
+    //...
+}
+```
+
+### Bean Validation?
+Bean Validation은 특정 구현체가 아닌 Bean Validation 2.0(JSR-380)이라는 기술 표준임   
+검증 애노테이션 및 여러 인터페이스의 모음(JPA가 표준이고 구현체로 Hibernate가 있는것과 같음)   
+Bean Validation의 일반적인 구현체는 Hibernate Validator가 있다.(ORM X)
