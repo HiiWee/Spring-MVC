@@ -1435,7 +1435,6 @@ Bean Validation 기능 사용을 위해 의존관계를 추가하고 스프링�
 
 <br><br>
 
-# <검증2 - Bean Validation>
 ## [Bean Validation - 스프링 적용]
 기존의 v1 ~ v5를 제거하고, 기존에 등록한 ItemValidator를 제거한 이후 실행하게 되면 신기하게도
 애노테이션 기반의 Bean Validation이 정상 동작한다.
