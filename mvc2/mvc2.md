@@ -1431,3 +1431,56 @@ Bean Validation 기능 사용을 위해 의존관계를 추가하고 스프링�
 
 
 > 스프링은 이미 Bean Validator를 스프링에 완전히 통합하였으므로 편리하게 가져다 사용할 수 있다.
+
+
+<br><br>
+
+# <검증2 - Bean Validation>
+## [Bean Validation - 스프링 적용]
+기존의 v1 ~ v5를 제거하고, 기존에 등록한 ItemValidator를 제거한 이후 실행하게 되면 신기하게도
+애노테이션 기반의 Bean Validation이 정상 동작한다.
+> 특정 필드의 범위를 넘어서는 검증(가격 * 수량의 합은 10000이상) 기능이 빠짐
+
+<br>
+
+### 스프링 MVC가 Bean Validator를 사용할 수 있는 이유
+스프링 부트에 spring-boot-starter-validation 라이브러리를 넣으면 자동으로 Bean Validator를 인지하고
+스프링에 통합한다.
+
+<br>
+
+### 더하여 스프링 부트는 자동으로 글로벌 Validator로 등록한다.   
+`LocalValidatorFactoryBean`을 글로벌 Validator로 등록한다. 이 Validator는 `@NotNull`같은 애노테이션을 보고
+검증을 수행한다. 
+
+글로벌 Validator가 등록됐으므로 우리는 `@Validated`, `@Valid` 애노테이션만 적용해도
+실제 검증기가 동작한다.   
+따라서 검증오류 발생시 `FieldError`, `ObjectError`를 생성해 `BindingResult`에 담는다.
+
+> 단 글로벌 Validator 직접 등록시 기존의 Bean Validator를 글로벌 검증기로 등록하지 않으므로
+> 애노테이션 기반의 빈 건증기는 동작하지 않음
+
+<br>
+
+### @Valid? @Validated   
+둘 다 사용가능하다, 단 `@Valid`는 추가적인 의존관계를 gradle에 추가해야 사용할 수 있다.   
+`@Valid`는 자바 표준 검증 애노테이션이고, `@Validated`는 스프링 전용 검증 애노테이션인데   
+두 기능은 거의 동일하기 동작한다. 단, `@Validated`는 내부에 `groups`라는 기능을 포함함
+
+<br>
+
+### 검증 순서
+1. `@ModelAttribute` 각각의 필드에 타입 변환 시도
+   1. 성공하면 다음으로
+   2. 실패하면 typeMismatch FieldError 추가
+2. `Validator` 적용
+
+**여기서 중요한 부분은 바인딩에 성공한 필드만 Bean Validation이 적용된다.**   
+따지고 보면 타입 변환 및 바인딩에 성공한 필드가 BeanValidation을 적용하는 의미가 있다.   
+(즉, 모델 객체에 바인딩 받는 값이 정상으로 들어와야 검증의 의미 있음)
+
+@ModelAttribute -> 각 필드 타입변환 시도 -> 반환에 성공한 필드만 BeanValidation 적용
+
+* `itemName` 에 문자 "A" 입력 타입 변환 성공 -> `itemName` 필드에 `BeanValidation` 적용 
+* `price` 에 문자 "A" 입력 -> "A"를 숫자 타입 변환 시도 실패 -> typeMismatch FieldError 추가 ->
+  `price` 필드는 `BeanValidation` 적용 X
