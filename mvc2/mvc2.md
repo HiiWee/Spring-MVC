@@ -1483,3 +1483,43 @@ Bean Validation 기능 사용을 위해 의존관계를 추가하고 스프링�
 * `itemName` 에 문자 "A" 입력 타입 변환 성공 -> `itemName` 필드에 `BeanValidation` 적용 
 * `price` 에 문자 "A" 입력 -> "A"를 숫자 타입 변환 시도 실패 -> typeMismatch FieldError 추가 ->
   `price` 필드는 `BeanValidation` 적용 X
+
+<br><br>
+
+## [Bean Validation - 에러 코드]
+Bean Validation이 기본으로 제공하는 오류 메시지를 좀 더 자세히 변경해보자!
+
+Bean Validation 적용 후 `bindingResult`에 등록된 검증 오류 코드를 살펴보자 오류 코드가 다음과 같이
+애노테이션 이름으로 등록된다. (typeMismatch와 유사)
+```
+Field error in object 'item' on field 'itemName': rejected value []; 
+codes [NotBlank.item.itemName,NotBlank.itemName,NotBlank.java.lang.String,NotBlank];
+```
+
+실제 애노테이션을 기반으로 오류 코드가 MessageCodesResolver를 통해 순서대로 생성된다.
+```
+@NotBlank
+NotBlank.item.itemName 
+NotBlank.itemName 
+NotBlank.java.lang.String 
+NotBlank
+
+@Range
+Range.item.price 
+Range.price 
+Range.java.lang.Integer 
+Range
+```
+
+실제 메시지를 등록해보고 아이템 등록화면에서 오류코드를 발생시키면 커스텀 오류가 등록됐음을 알 수 있다.   
+보통 `{0}`은 필드명이고 `{1}`, `{2}` ...은 각 애노테이션마다 다르다.
+
+> Range={0}, {2} ~ {1} 허용 Range의 경우 {2} ~ {1}로 해야 정상적으로 낮은 값 ~ 큰 값으로 렌더링 된다.   
+> Range에는 Min과 Max 두 가지 속성이 존재하는데 Max가 Min보다 알파벳 기준으로 우선순위가 높기 떄문에
+> Max가 {1}로 등록된다.
+
+
+### Bean Validation 메시지 찾는 순서
+1. 생성된 메시지 코드 순서대로 `messageSource`에서 메시지 찾기
+2. 애노테이션의 message 속성 사용 -> `@NotBlank(message = "공백! {0}")`
+3. 라이브러리가 제공하는 기본 값 사용 -> 공백일 수 없습니다.
