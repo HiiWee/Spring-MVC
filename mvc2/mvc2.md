@@ -1537,3 +1537,13 @@ Bean Validation에서 Field가 아닌 ObjectError는 `@ScriptAssert()`를 사용
 검증 코드를 따로 메소드로 뽑아서 사용하거나, 클래스를 두어 사용해도 된다.
 
 > 단순하지 않고 기술의 제약이 많다면 기존의 것을 사용해도 좋다!
+
+<br><br>
+
+## [Bean Validation - 수정에 적용]
+상품 수정에도 Bean Validation을 적용해보자
+
+- edit(): Item 모델 객체에 @Validated를 추가하고 BindingResult도 추가한다.
+- 글로벌 오류 및 검증 오류 발생시 editForm으로 이동하는 코드를 추가한다.
+- editForm.html에서도 기존의 addForm.html처럼 검증 코드들을 추가해주면 간단하게 완성 할 수 있음   
+  (글로벌 오류 메시지, 상품명, 가격, 수량 필드에 검증 기능 추가)
