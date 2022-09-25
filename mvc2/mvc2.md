@@ -1582,3 +1582,28 @@ Bean Validation에서 Field가 아닌 ObjectError는 `@ScriptAssert()`를 사용
 > **참고**   
 > 현재 구조에서는 수정시 item 의 id 값은 항상 들어있도록 로직이 구성되어 있다. 그래서 검증하지 않아도
 된다고 생각할 수 있다. 그런데 HTTP 요청은 언제든지 악의적으로 변경해서 요청할 수 있으므로 서버에서 항상 검증해야 한다. 예를 들어서 HTTP 요청을 변경해서 item 의 id 값을 삭제하고 요청할 수도 있다. 따라서 최종 검증은 서버에서 진행하는 것이 안전한다.
+
+<br><br>
+
+## [Bean Validation - groups
+동일한 모델 객체를 등록할때와 수정할 때 각각 다르게 검증하는 방법을 알아보자
+
+### 2가지의 방법이 존재
+1. BeanValidation의 groups 기능을 사용한다.
+2. Item을 직접 사용하지 않고, ItemSaveForm, ItemUpdateForm과 같은 폼 전송을 위한 별도의 모델 객체를 만들어 사용
+
+### BeanValidation groups 기능 사용
+Bean Validation은 groups라는 기능을 제공한다.   
+등록시에 검증할 기능, 수정시에 검증할 기능을 나누어 적용할 수 있음
+
+- groups를 적용하기 위해서는 interface 타입으로 저장용, 등록용을 구분한다.(단순 구분용 추상메서드 없음)    
+  (`SaveCheck`, `UpdateCheck`)
+- javax, hibernate가 제공하는 검증 어노테이션은 groups라는 속성을 가진다 여기에 위에서 만든 인터페이스 타입을 적용한다.   
+  (`@NotNull(groups = {SaveCheck.class, UpdateCheck.class})`)
+- 이후 컨트롤러의 `@Validated`의 `value` 속성에 적용하고자 하는 인터페이스 타입을 적용하면 된다.(value속성은 생략 가능)
+  - 단, groups 기능은 `@Validated`만 존재 `@Valid`는 사용할 수 없다.
+
+<br>
+
+groups의 방식은 코드의 복잡도가 올라간다. 따라서 주로 등록용 객체와 수정용 폼 객체를 분리하여 사용하는 방식을
+많이 사용한다.

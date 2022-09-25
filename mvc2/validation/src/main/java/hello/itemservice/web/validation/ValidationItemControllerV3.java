@@ -2,6 +2,8 @@ package hello.itemservice.web.validation;
 
 import hello.itemservice.domain.item.Item;
 import hello.itemservice.domain.item.ItemRepository;
+import hello.itemservice.domain.item.SaveCheck;
+import hello.itemservice.domain.item.UpdateCheck;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -41,9 +43,34 @@ public class ValidationItemControllerV3 {
         return "validation/v3/addForm";
     }
 
-    // WebDataBinder를 이용해 Validator 미리 넣어놓고 즉시 사용하기
-    @PostMapping("/add")
+    // @PostMapping("/add")
     public String addItem(@Validated @ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
+
+        // ObjectError는 자바 코드로 가져가는 편이 좋다.
+        if (item.getPrice() != null && item.getQuantity() != null) {
+            int resultPrice = item.getPrice() * item.getQuantity();
+            if (resultPrice < 10000) {
+                bindingResult.reject("totalPriceMin", new Object[]{10000, resultPrice}, null);
+            }
+        }
+
+        // bindingResult가 에러가 있으면
+        if (bindingResult.hasErrors()) {
+            log.info("errors={}", bindingResult);
+            // 또한 모델에 자동으로 bindingResult가 담겨서 넘어간다.
+            return "validation/v3/addForm";
+        }
+
+        // 성공 로직
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v3/items/{itemId}";
+    }
+
+    // @Validated는 SaveCheck.class 조건만 검증을 하게 된다.
+    @PostMapping("/add")
+    public String addItemV2(@Validated(SaveCheck.class) @ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
 
         // ObjectError는 자바 코드로 가져가는 편이 좋다.
         if (item.getPrice() != null && item.getQuantity() != null) {
@@ -74,8 +101,29 @@ public class ValidationItemControllerV3 {
         return "validation/v3/editForm";
     }
 
-    @PostMapping("/{itemId}/edit")
+    // @PostMapping("/{itemId}/edit")
     public String edit(@PathVariable Long itemId, @Validated @ModelAttribute Item item, BindingResult bindingResult) {
+
+        // ObjectError는 자바 코드로 가져가는 편이 좋다.
+        if (item.getPrice() != null && item.getQuantity() != null) {
+            int resultPrice = item.getPrice() * item.getQuantity();
+            if (resultPrice < 10000) {
+                bindingResult.reject("totalPriceMin", new Object[]{10000, resultPrice}, null);
+            }
+        }
+
+        if (bindingResult.hasErrors()) {
+            log.info("errors={}", bindingResult);
+            return "validation/v3/editForm";
+        }
+
+        itemRepository.update(itemId, item);
+        return "redirect:/validation/v3/items/{itemId}";
+    }
+
+    // 수정할때는 UpdateCheck을 달고있는 필드만 수정한다.
+    @PostMapping("/{itemId}/edit")
+    public String editV2(@PathVariable Long itemId, @Validated(UpdateCheck.class) @ModelAttribute Item item, BindingResult bindingResult) {
 
         // ObjectError는 자바 코드로 가져가는 편이 좋다.
         if (item.getPrice() != null && item.getQuantity() != null) {
