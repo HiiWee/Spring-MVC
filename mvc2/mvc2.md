@@ -1649,3 +1649,55 @@ groups의 방식은 코드의 복잡도가 올라간다. 따라서 주로 등록
 변경하지 않게 되면 새로운 객체의 이름이 모델의 이름이 되고
 기존의 뷰 템플릿에서 사용하던 "item"이라는 이름을 찾을 수 없게 되고, th:object의 이름도 같이 변경해주어야
 오류가 발생하지 않는다.
+
+<br><br>
+
+## [Bean Validation - HTTP 메시지 컨버터]
+`@Valid`, `@Validated`는 `HttpMessageConverter`(`@RequestBody`)에도 적용할 수 있다.
+
+> **참고**
+> `@ModelAttribute`는 HTTP 요청 파라미터(URL 쿼리 스트링, POST Form)를 다룰때 사용   
+> `@RequestBody`sms HTTP Body의 데이터를 객체로 변환할 때 사용한다. 주로 API JSON 요청을 다룰때 사용
+
+<br>
+
+**API의 경우 3가지 경우를 나누어서 생각해야 한다.**
+1. `성공 요청`: 성공
+2. `실패 요청`: JSON을 객체로 생성하는것 자체가 실패함
+    - api는 어떻게든 `JSON -> 객체`로 변경해야 검증을 할 수 있는데 JSON에 오류가 있으면 객체 자체를 생성할 수 없다. 
+      따라서 Controller 자체가 호출되지 않고 예외가 발생한다.
+3. `검증 오류 요청`: JSON을 객체로 생성하는 것은 성공했으나 검증에서 실패함
+
+<br>
+
+### 성공 요청
+정상적으로 JSON 반환된다.
+
+<br>
+
+### 실패 요청
+실패 요청의 경우 HttpMessageConverter에서 요청 JSON을 ItemSaveForm 객체로 생성하는데 실패한다.     
+이 경우 ItemSaveForm 객체를 만들지 못하므로 **Controller 자체가 실행되지 않고 전에 예외가 발샏한다.**
+물론 Validator도 실행되지 않는다.
+
+<br>
+
+### 검증 오류 요청
+`return bindingResult.getAllErrors();` 는 `ObjectError` 와 `FieldError` 를 반환   
+실제 개발시에는 이 객체를 그대로 사용하기 보단 필요 데이터만 뽑아서 별도의 API스펙을 정의하고   
+그에 맞는 객체를 만들어서 반환해야 한다.
+
+<br>
+
+### @ModelAttribute vs @RequestBody
+- **@ModelAttribute**   
+`@ModelAttribute`는 필드 단위로 세세하게 동작하므로 하나의 필드 타입이 맞지 않아도 나머지 필드는 정상 처리가 가능하다.   
+즉 특정 필드가 바인딩 되지 않아도 나머지 정상 바인딩 필드에 `Validator`를 사용한 검증적용 가능하다.
+
+<br>
+
+- **@RequestBody**   
+  HttpMessageConverter(`@RequestBody`)는 각각의 필드가 아닌 전체 객체 단위로 적용된다.   
+  따라서 메시지 컨버터의 정상 작동으로 ItemSaveForm 객체가 만들어져야 컨트롤러가 호출되고, 검증을 적용할 수 있다.
+  @RequestBody는 HttpMessageConverter단계에서 JSON 데이터 -> 객체 바인딩을 실패하면 이후 컨트롤러 호출 및 검증 단계
+  자체가 진행되지 않고 예외가 발생한다.
