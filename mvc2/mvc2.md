@@ -1858,3 +1858,21 @@ groups의 방식은 코드의 복잡도가 올라간다. 따라서 주로 등록
 프로젝트마다 이런 세션을 직접 만들어서 사용하는 것은 불편함   
 따라서 서블릿이 지원해주는 세션을 이용할 수 있다.   
 우리가 만든 기능을 모두 지원해주고 더하여 일정 시간 사용하지 않으면 expire해주는 세션 삭제 기능을 제공한다.
+
+<br><br>
+
+## [로그인 처리하기 - 서블릿 HTTP 세션1]
+서블릿은 HttpSession이라는 기능을 제공한다.
+
+### 소개
+HttpSession도 직접 만든 SessionManager와 같은 방식으로 동작함   
+서블릿을 통해 HttpSession을 생성하면 다음과 같은 쿠키를 생성한다. 쿠키 이름이 JSESSIONID이며, 값은 랜덤값
+
+### 생성 및 조회
+세션 생성은 `request.getSession(true)`를 사용한다.   
+
+매개변수인 boolean create는 default가 true이며 기존 세션이 있다면 반환하고 없다면 새로운 세션을 생성한다.   
+하지만 false로 두게되면 기존 세션이 존재하지 않는다면 null값을 반환한다.
+
+세션에 데이터를 보관하는 방법은 session.setAttribute(name, Obejct)로 request.setAttribute()와 비슷하다.   
+실제로 세션에는 여러 값들을 저장할 수 있다.
