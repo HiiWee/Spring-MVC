@@ -4,10 +4,9 @@ import hello.login.domain.item.Item;
 import hello.login.domain.item.ItemRepository;
 import hello.login.domain.member.Member;
 import hello.login.domain.member.MemberRepository;
+import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
 
 @Component
 @RequiredArgsConstructor

@@ -1,14 +1,13 @@
 package hello.login.web.session;
 
-import org.springframework.stereotype.Component;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.stereotype.Component;
 
 @Component
 public class SessionManager {
@@ -16,10 +15,7 @@ public class SessionManager {
     private Map<String, Object> sessionStore = new ConcurrentHashMap<>();
 
     /**
-     * 세션 생성
-     * 추정 불가능 랜덤값인 sessionId 생성
-     * 세션 저장소에 sessionId 및 보관할 값 저장
-     * sessionId로 응답 쿠키 생성해 클라이언트에 전달
+     * 세션 생성 추정 불가능 랜덤값인 sessionId 생성 세션 저장소에 sessionId 및 보관할 값 저장 sessionId로 응답 쿠키 생성해 클라이언트에 전달
      */
     public void createSession(Object value, HttpServletResponse response) {
         // 세션 id를 생성하고, 값을 세션에 저장

@@ -1,13 +1,12 @@
 package hello.login.validation;
 
 import hello.login.domain.item.Item;
-import org.junit.jupiter.api.Test;
-
+import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-import java.util.Set;
+import org.junit.jupiter.api.Test;
 
 public class BeanValidationTest {
 

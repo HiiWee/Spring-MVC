@@ -1,13 +1,12 @@
 package hello.login.web.session;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import hello.login.domain.member.Member;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-
-
-import static org.assertj.core.api.Assertions.*;
 
 class SessionManagerTest {
 
@@ -22,7 +21,6 @@ class SessionManagerTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
         Member member = new Member();
         sessionManager.createSession(member, response);
-
 
         // 웹 브라우저의 요청 클라이언트 -> 서버
         // 요청에 응답 쿠키 저장

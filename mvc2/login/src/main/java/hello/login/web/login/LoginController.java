@@ -4,6 +4,11 @@ import hello.login.domain.login.LoginService;
 import hello.login.domain.member.Member;
 import hello.login.web.SessionConst;
 import hello.login.web.session.SessionManager;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -11,12 +16,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
 
 @Slf4j
 @Controller
@@ -33,7 +32,10 @@ public class LoginController {
     }
 
     // @PostMapping("/login")
-    public String login(@Valid @ModelAttribute LoginForm form, BindingResult bindingResult, HttpServletResponse response) {
+    public String login(
+            @Valid @ModelAttribute LoginForm form,
+            BindingResult bindingResult,
+            HttpServletResponse response) {
         if (bindingResult.hasErrors()) {
             return "login/loginForm";
         }
@@ -54,7 +56,10 @@ public class LoginController {
     }
 
     // @PostMapping("/login")
-    public String loginV2(@Valid @ModelAttribute LoginForm form, BindingResult bindingResult, HttpServletResponse response) {
+    public String loginV2(
+            @Valid @ModelAttribute LoginForm form,
+            BindingResult bindingResult,
+            HttpServletResponse response) {
         if (bindingResult.hasErrors()) {
             return "login/loginForm";
         }
@@ -75,7 +80,10 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    public String loginV3(@Valid @ModelAttribute LoginForm form, BindingResult bindingResult, HttpServletRequest request) {
+    public String loginV3(
+            @Valid @ModelAttribute LoginForm form,
+            BindingResult bindingResult,
+            HttpServletRequest request) {
         if (bindingResult.hasErrors()) {
             return "login/loginForm";
         }
