@@ -2,6 +2,7 @@ package hello.login.domain.member;
 
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class MemberRepository {
 
-    private static Map<Long, Member> store = new HashMap<>(); // static 사용
+    private static final Map<Long, Member> store = new HashMap<>(); // static 사용
     private static long sequence = 0L;
 
     public Member save(Member member) {
@@ -37,7 +38,7 @@ public class MemberRepository {
     }
 
     public List<Member> findAll() {
-        return new ArrayList<>(store.values());
+        return List.copyOf(store.values());
     }
 
     public void clearStore() {
