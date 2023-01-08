@@ -1895,3 +1895,22 @@ HttpSession도 직접 만든 SessionManager와 같은 방식으로 동작함
 혹여나 웹 브라우저가 쿠키를 지원하지 않는경우 URL을 통해 세션 id를 전송할 수 있게 하기위해 지원해준다.
 이를 끄기 위해서는 application.properties에 설정을 해주면 된다.   
 `server.servlet.session.tracking-modes=cookie`
+
+<br><br>
+
+## [세션 정보와 타임아웃 설정]
+세션이 제공하는 정보를 log를 찍어보면 세션 아이디, 유효시간, 생성시간, 마지막 접근 시간, 새로 생성됐는지의 여부를 알 수 있다.
+
+세션은 서버에 부담이 크므로, 일정 시간동안 접근이 없다면 자동적으로 세션을 파기시켜주도록 사용하고, 주로 30분이 적절한 시간이다.
+또한, 세션 유지 시간이 길어지면, 세션 id가 탈취됐을때 해킹의 위험성이 증가하므로 적절한 시간을 유지해야한다.
+
+HttpSession은 세션의 마지막 접근 시간을 기준으로 유효 시간을 계산하는데 default 값은 1800초(30분)이다.
+만약 글로벌하게 변경하고 싶다면 application.properties에 다음과 같이 설정한다.   
+`server.servlet.session.timeout=60` (기본은 1800초)
+
+혹은 특정 세션 단위로 시간을 설정한다.   
+`session.setMaxInactiveInterval(1800); // 1800초`
+
+### 세션 타임아웃
+세션의 유지 시간은 마지막 HTTP 요청 시간을 기준으로 계산된다.(`LastAccessedTime`)   
+LastAccessedTime 이후 timeout 시간이 지나면 WAS는 내부에서 해당 세션을 제거한다.
