@@ -1876,3 +1876,22 @@ HttpSession도 직접 만든 SessionManager와 같은 방식으로 동작함
 
 세션에 데이터를 보관하는 방법은 session.setAttribute(name, Obejct)로 request.setAttribute()와 비슷하다.   
 실제로 세션에는 여러 값들을 저장할 수 있다.
+
+### 의문
+로그인을 완료하게 되면 URL에 다음과 같이 세션이 보인다.   
+`http://localhost:8080/;jsessionid=5FAC72206CC239062BF775342AD4EDFC` 왜 그럴까?
+
+<br><br>
+
+## [로그인 처리하기 - 서블릿 HTTP 세션2]
+스프링은 세션을 편리하게 사용할 수 있도록 `@SessionAttribute`라는 어노테이션을 제공한다.   
+`name` 옵션 으로 세션에 저장된 객체의 이름을 지정하고, `required` 옵션은 true 또는 false를 통해
+세션이 없거나 속성이 없다면 null을 받게 하거나(false), 예외를 던지게 할 수 있다.(true)
+
+### TrackingMode
+로그인을 처음 시도하면 URL이 다음과 같이 jsessionid 를 포함하고 있는 것을 확인할 수 있다.   
+`http://localhost:8080/;jsessionid=F59911518B921DF62D09F0DF8F83F872`
+
+혹여나 웹 브라우저가 쿠키를 지원하지 않는경우 URL을 통해 세션 id를 전송할 수 있게 하기위해 지원해준다.
+이를 끄기 위해서는 application.properties에 설정을 해주면 된다.   
+`server.servlet.session.tracking-modes=cookie`
