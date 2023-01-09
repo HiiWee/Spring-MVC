@@ -1918,7 +1918,7 @@ LastAccessedTime 이후 timeout 시간이 지나면 WAS는 내부에서 해당 �
 <br><br>
 
 # <로그인 처리2 - 필터, 인터셉터>
-## 서블릿 필터 - 소개
+## [서블릿 필터 - 소개]
 우리가 작성한 만들어온 애플리케이션의 문제
 - 로그인을 하지 않아도 상품 관리 페이지에 접속할 수 있다.
 - 따라서 우리는 로그인 한 사용자만 접속할 수 있도록 해야 한다.
@@ -1943,3 +1943,23 @@ LastAccessedTime 이후 timeout 시간이 지나면 WAS는 내부에서 해당 �
 1. init(): 필터 초기화, 서블릿 컨테이너 생성시 호출
 2. doFilter(): 고객의 요청이 올때마다 해당 메서드 호출, 필터의 로직
 3. destroy(): 필터 종료 메서드, 서블릿 컨테이너가 종료될 때 호출됨.
+
+<br><br>
+
+## [서블릿 필터 - 요청 로그]
+```java
+@Override
+public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain)
+        throws IOException, ServletException {
+    chain.doFilter(request, response);  // 다음 필터가 있다면 호출 없다면 서블릿 호출
+}
+```
+위의 doFilter메서드는 필터 체인을 이용하기 위해 필수적으로 작성해야 하는 코드이다.
+다음으로 호출해야할 필터가 있다면 해당 필터를 호출하며 만약 마지막 필터라면 서블릿을 호출한다.
+
+### 필터의 등록
+`FilterRegistrationBean`을 이용해 등록할 수 있다.   
+@ServletComponentScan @WebFilter를 이용해 등록할 수 있지만, 이는 필터의 순서 보장이 되지 않는다.
+
+### 참고
+**작성한 코드중에서 사용자를 구분하는 식별자를 모든 요청에 남기기 위해서는 logback mdc를 이용한다.**
