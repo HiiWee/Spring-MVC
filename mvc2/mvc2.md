@@ -2029,9 +2029,65 @@ HandlerIntercepter를 구현하면 되며, 3가지의 메서드를 가진다.
    - 컨트롤러 호출전 실행됨
 2. `boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler, @Nullable ModealAndView modelAndView)`
    - 컨트롤러 호출 이후 실행됨 (컨트롤러에서 예외 발생시 호출되지 않음)
+   - true를 반환하면 다음으로 진행하고, false이면 더는 진행하지 않음
 3. `boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler, @Nullable Exception ex)`
    - 뷰까지 렌더링 된 이후에 호출됨, 컨트롤러에서 예외 발생해도 반드시 호출함
    - 따라서 예외와 무관한 공통 처리를 처리할 수 있다.
 
 ### 정리
 인터셉터는 스프링 MVC 구조에 특화된 필터 기능을 제공한다. 꼭 필터를 사용해야 하는 상황이 아니라면 인터셉터를 사용하자
+
+<br><br>
+
+## [스프링 인터셉터 - 요청 로그]
+스프링 인터셉터에서 호출 시점의 분리로 인해 UUID같은 값들을 공유할 수 없다. 필드로 사용하고자 한다면
+싱글톤으로 관리되는 인터셉터로 인해 중간에 값이 변경될 위험이 존재한다.
+
+따라서 request.setAttribute()를 이용하면 된다.
+
+### HandlerMethod
+일반적으로 @Controller, @RequestMapping을 활용한 핸들러 매핑의 경우, 각 메소드 단위의 핸들러 정보를 담기위해
+`HandlerMethod` 인스턴스가 넘어온다.
+```java
+@Override
+public boolean preHandle(final HttpServletRequest request, final HttpServletResponse response, final Object handler)
+        throws Exception {
+    // @RequestMapping: HandlerMethod
+    // 정적 리소스: ResourceHttpRequestHandler
+
+    if (handler instanceof HandlerMethod) {
+        HandlerMethod handlerMethod = (HandlerMethod) handler;
+    }
+    return true;
+}
+```
+
+### ResourceHttpRequestHandler
+정적 리소스를 호출하는 경우 ResourceRequestHandler가 핸들러 정보로 넘어온다. 따라서 타입에 따른 분류가 필요하다.
+
+### postHandle, afterCompletion
+최종 RESPONSE 로그를 afterCompletion에서 출력하도록 한 이유는 만약 Controller에서 예외가 발생하면
+postHandle을 실행하지 않기 때문이다. 반면에 afterCompletion은 뷰 렌더링 이후 반드시 실행하므로
+로그를 확인해야 하는 경우 100% 출력을 보장한다.
+
+### WebConfig 클래스에 인터셉트 등록
+인터셉터를 등록하기 위해서는 WebMvcConfigurer 인터페이스를 구현하여 `addInterceptors(InterceptorRegistry registry)` 메서드를 오버라이딩한다.   
+이후 메소드 체이닝 방식으로 필터를 등록하게 된다.
+```java
+@Configuration
+  public class WebConfig implements WebMvcConfigurer {
+      @Override
+      public void addInterceptors(InterceptorRegistry registry) {
+          registry.addInterceptor(new LogInterceptor())
+                  .order(1) // 순서 지정
+                  .addPathPatterns("/**") // 인터셉터 적용 URL 패턴 지정
+                  .excludePathPatterns("/css/**", "/*.ico", "/error"); // 인터셉터 제외 URL 패턴 지정
+      }
+//...
+}
+```
+필터와 달리 조금 더 정밀하게 URL패턴의 지정이 가능하다.
+
+### 참고
+자세한 PathPattern은 공식문서를 참조하자.   
+https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/util/pattern/PathPattern.html
