@@ -2011,3 +2011,27 @@ try {
 ### 결과
 서블릿 필터의 적용으로 인증되지 않은 사용자는 나머지 경로에 접근할 수 없음   
 또한 공통적인 관심사를 각 컨트롤러가 아닌 필터로 분리했으므로 향후 변경시에도 유연하게 대처할 수 있다.
+
+<br><br>
+
+## [스프링 인터셉터 - 소개]
+스프링 인터셉터와 필터의 차이는 호출 순서와 제공하는 기능에 차이가 있다. 스프링 인터셉터의 호출순서는 다음과 같다.   
+`HTTP 요청` -> `WAS`-> `필터` -> `서블릿` -> `스프링 인터셉터` -> `컨트롤러`
+
+서블릿과 컨트롤러 사이에서 컨트롤러 호출 직전에 호출 된다. (스프링 MVC가 제공하는 기능 이므로 디스패처 서블릿 이후에 등장)   
+만약 스프링 인터셉터에서 적절하지 않은 요청이라 판단되면 컨트롤러는 호출하지 않는다.   
+또한, 필터 처럼 인터셉터도 체인 방식으로 자유롭게 추가할 수 있다.
+
+### 스프링 인터셉터 interface
+HandlerIntercepter를 구현하면 되며, 3가지의 메서드를 가진다.
+
+1. `boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)`
+   - 컨트롤러 호출전 실행됨
+2. `boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler, @Nullable ModealAndView modelAndView)`
+   - 컨트롤러 호출 이후 실행됨 (컨트롤러에서 예외 발생시 호출되지 않음)
+3. `boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler, @Nullable Exception ex)`
+   - 뷰까지 렌더링 된 이후에 호출됨, 컨트롤러에서 예외 발생해도 반드시 호출함
+   - 따라서 예외와 무관한 공통 처리를 처리할 수 있다.
+
+### 정리
+인터셉터는 스프링 MVC 구조에 특화된 필터 기능을 제공한다. 꼭 필터를 사용해야 하는 상황이 아니라면 인터셉터를 사용하자
