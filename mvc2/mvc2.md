@@ -1963,3 +1963,51 @@ public void doFilter(final ServletRequest request, final ServletResponse respons
 
 ### 참고
 **작성한 코드중에서 사용자를 구분하는 식별자를 모든 요청에 남기기 위해서는 logback mdc를 이용한다.**
+
+<br><br>
+
+## [서블릿 필터 - 인증 체크]
+
+### 필터의 필요성
+모든 곳에 로그인 인증을 적용하게 되면 로그인을 하려는 사용자도 로그인이 되어있지 않아 접근할 수 없는
+상황이 발생한다. 따라서 홈, 회원가입, 로그인, css와 같은 리소스에는 로그인을하지 않아도 접근할 수 있어야 하는데
+이런 리스트를 `whitelist`라고 한다.
+
+### 필터 적용
+위와 같은 리스트를 제외하고는 로그인 인증 체크 필터를 적용한다.
+
+```java
+try {
+    log.info("인증 체크 필터 시작{}", requestURI);
+    if (isLoginCheckPath(requestURI)) {
+        log.info("인증 체크 로직 실행 {}", requestURI);
+        HttpSession session = httpRequest.getSession(false);
+        if (session == null || session.getAttribute(SessionConst.LOGIN_MEMBER) == null) {
+            log.info("미인증 사용자 요청 {}", requestURI);
+            // 로그인으로 redirect
+            httpResponse.sendRedirect("/login?redirectURL=" + requestURI);
+            return;
+        }
+    }
+    chain.doFilter(request, response);
+} catch (Exception e) {
+    throw e; // 예외 로깅 가능 하지만, 톰캣까지 예외를 보내주어야 함
+} finally {
+    log.info("인증 체크 필터 종료 {}", requestURI);
+}
+```
+
+### 동작 원리
+인증된 사용자가 들어온다면 다음 필터 혹은 서블릿을 호출하지만, 인증되지 않은(로그인 x) 사용자라면
+현재 요청한 url을 쿼리 스트링에 붙여서 로그인 페이지로 리다이렉트한다.
+
+여기서 현재 요청한 url을 붙여주는 이유는, 사용자가 로그인을 했을때 무작정 홈 화면으로 가기보단
+직전에 요청한 인증이 필요했던 페이지로 이동해주는것이 UX적인 관점에서 훨씬 좋기 때문이다.
+
+이후 로그인을 하게됐을때 쿼리스트링의 값으로 리다이렉트하면 된다.   
+`@RequestParam(defaultValue = "/") String redirectURL`   
+(default가 `/`이므로 쿼리스트링의 값이 없다면 홈 화면으로 이동한다.)
+
+### 결과
+서블릿 필터의 적용으로 인증되지 않은 사용자는 나머지 경로에 접근할 수 없음   
+또한 공통적인 관심사를 각 컨트롤러가 아닌 필터로 분리했으므로 향후 변경시에도 유연하게 대처할 수 있다.
