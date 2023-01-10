@@ -2091,3 +2091,46 @@ postHandle을 실행하지 않기 때문이다. 반면에 afterCompletion은 뷰
 ### 참고
 자세한 PathPattern은 공식문서를 참조하자.   
 https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/util/pattern/PathPattern.html
+
+<br><br>
+
+## [스프링 인터셉터 - 인증 체크]
+인터셉터를 이용한 로그인 인증 체크는 필터보다 훨씬 간단하다.   
+인증 체크는 `preHandle`에서만 검사하면 되므로 하나의 메서드만 구현한다.
+
+```java
+@Slf4j
+public class LoginCheckInterceptor implements HandlerInterceptor {
+
+    @Override
+    public boolean preHandle(final HttpServletRequest request, final HttpServletResponse response, final Object handler)
+            throws Exception {
+        String requestURI = request.getRequestURI();
+        log.info("인증 체크 인터셉터 실행 {}", requestURI);
+
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute(SessionConst.LOGIN_MEMBER) == null) {
+            log.info("미인증 사용자 요청");
+            // 로그인으로 redirect
+            response.sendRedirect("/login?redirectURL=" + requestURI);
+            return false;
+        }
+
+        return true;
+    }
+}
+```
+기존 필터에서와 달리 whitelist의 내용이 없고, 단지 인증에 관한 정보만 담겨있다.   
+인터셉터를 적용할 URL 패턴과 적용하지 않을 패턴은 모두 인터셉터를 등록할때 설정할 수 있다.   
+
+```java
+registry.addInterceptor(new LoginCheckInterceptor())
+        .order(2)
+        .addPathPatterns("/**")
+        .excludePathPatterns("/", "/members/add", "/login", "/logout", "/css/**", "/*.ico", "/error");
+```
+기존 필터보다 훨씬 정교하게 등록할 수 있고, 심지어 실제 preHandle 로직과 분리되어 조금 더 좋은 가독성을 보인다.
+
+### 정리
+서블릿 필터 vs 스프링 인터셉터라면 주로 인터셉터가 훨씬 편리함을 알 수 있었다.
+필터를 사용해야하는 특별한 경우가 아니라면 스프링 인터셉터를 주로 사용할듯 하다.
