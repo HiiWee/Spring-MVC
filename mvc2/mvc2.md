@@ -2200,3 +2200,28 @@ HttpServletResponse에 sendError로 상태코드와 메시지를 전달하면 �
 이후 서블릿 컨테이너는 응답 이전에 sendErorr()가 호출됐는지 확인하고 호출됐다면 입력된 상태코드에 맞는 오류 메시지를 보여준다.
 
 하지만 이런 오류화면 조차도 사용자가 보기에는 상당히 불친절하며 크게 의미가 없는 페이지가 된다.
+
+<br><br>
+
+## [서블릿 예외 처리 - 오류 화면 제공]
+스프링이 기본적으로 제공하는 예외 페이지는 친절하지 않으므로 이를 직접 커스텀해보자
+
+### WebServerFactoryCustomizer\<ConfigurableWebServerFactory> 사용
+이를 사용하여 customize() 메서드를 오버라이딩하면 factory에 원하는 에러 상태 코드와 해당 코드에 맞는 페이지의 경로를 등록할 수 있다.
+```java
+@Component
+public class WebServerCustomizer implements WebServerFactoryCustomizer<ConfigurableWebServerFactory> {
+    @Override
+    public void customize(final ConfigurableWebServerFactory factory) {
+        ErrorPage errorPage404 = new ErrorPage(HttpStatus.NOT_FOUND, "/error-page/404");
+        ErrorPage errorPage500 = new ErrorPage(HttpStatus.INTERNAL_SERVER_ERROR, "/error-page/500");
+        ErrorPage errorPageEx = new ErrorPage(RuntimeException.class, "/error-page/500");
+    
+        factory.addErrorPages(errorPage404, errorPage500, errorPageEx);
+    }
+}
+
+```
+예외가 WAS까지 올라가게 되고 만약 커스텀 등록한 에러 페이지가 존재한다면 WAS는 해당 코드에 맞는 페이지의 경로를 그대로 호출한다.
+
+GET과 POST의 차이를 두지 않고, 에러가 발생하면 호출되어야 하므로 ErrorPageController에서는 @RequestMapping을 이용하여 HTTP 메소드를 구분하지 않는다.
