@@ -2134,3 +2134,48 @@ registry.addInterceptor(new LoginCheckInterceptor())
 ### 정리
 서블릿 필터 vs 스프링 인터셉터라면 주로 인터셉터가 훨씬 편리함을 알 수 있었다.
 필터를 사용해야하는 특별한 경우가 아니라면 스프링 인터셉터를 주로 사용할듯 하다.
+
+<br><br>
+
+## [ArgumentResolver 활용]
+ArgumentResolver를 활용해 조금더 편리한 로그인 기능 만들기
+
+### 기존 코드
+```java
+    @GetMapping("/")
+    public String homeLoginV3Spring(
+            @SessionAttribute(name = SessionConst.LOGIN_MEMBER, required = false) Member loginMember, Model model) {
+        // 세션에 회원 데이터가 없으면 home
+        if (loginMember == null) {
+            return "home";
+        }
+        // 세션이 유지되면 로그인으로 이동
+        model.addAttribute("member", loginMember);
+        return "loginHome";
+    }
+```
+@SessionAttribute를 사용해, 담긴 객체의 이름과 및 여러 설정을 통해 Member를 가져온다.   
+이를 단순하게 custom annotation을 활용해 만들어보자
+
+### @Login Annotation
+`@Login` annotation이 존재하면 `ArgumentResolver`가 동작해 자동으로 세션에 있는 회원을 찾아서 객체로
+반환해주게 만들고 존재하지 않는다면 null을 반환하도록 해보자
+
+어노테이션은 ElementType은 PARAMETER로 RetentionPolicy는 RUNTIME으로 둔다.
+RUNTIME으로 두는 이유는 리플렉션 등을 활용할 수 있게 한다.
+
+### ArgumentResolver 만들기
+`HandlerMethodArgumentResolver`를 구현하는 클래스를 만들게 되면 두 가지의 메소드를 재정의한다.
+
+1. `supportsParameter`
+   - 여기서는 파라미터에 @Login 어노테이션이 붙어있는지와, @Login이 붙은 파라미터의 타입이 Member인지 모두 확인한다.
+2. `resolveArgument`
+   - 실제 세션에서 객체를 가져오는데 세션이 없다면 null을 반환, 세션이 존재하면 로그인 멤버를 찾아서 반환하여 Argument를 resolve함
+
+### ArgumentResolver 등록하기
+`WebMvcConfigurer`를 구현하는 WebConfig에서 addArgumentResolvers 메서드를 재정의하고 `리스트`에 
+만들었던 LoginMemberArgumentResolver를 추가한다.
+
+### 참고
+supportsParameter 메소드는 이미 한번 호출했던 상황이라면 캐싱을 적용하기에 두번째 호출할때는
+호출되지 않는다.
