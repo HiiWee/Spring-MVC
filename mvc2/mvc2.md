@@ -2325,3 +2325,24 @@ public class WebConfig implements WebMvcConfigurer {
 
 파일 이름은 error code로 정해지며 만약 `4xx.html`이라면 400번대 오류는 해당 페이지를 오픈한다.   
 또한 404.html과 같이 4xx보다 더 구체적이면 구체적인 페이지의 우선순위가 높다.
+
+<br><br>
+
+## [스프링 부터 - 오류 페이지2]
+`BasicErrorController`는 단순히 에러 페이지만 나타내는것이 아닌 model에 추가 정보들을 담아서 전달하기도 한다.
+- timestamp, status, error, exception, trace, message, errors, path 등
+```thymeleafexpressions
+<li th:text="|timestamp: ${timestamp}|"></li>
+<li th:text="|path: ${path}|"></li>
+<li th:text="|status: ${status}|"></li>
+<li th:text="|message: ${message}|"></li>
+<li th:text="|error: ${error}|"></li>
+<li th:text="|exception: ${exception}|"></li>
+<li th:text="|errors: ${errors}|"></li>
+<li th:text="|trace: ${trace}|"></li>
+```
+따라서 다음과 같이 출력할 수도 있지만, 오류 관련 내부 정보를 보여주게 되면 오히려 사용자의 가독성을 해치거나
+해킹의 위험성도 배제할 수 없다. 이러한 설정들을 만약에 보여주고 싶다면 application.properties에서 설정할 수 있다.
+
+### 참고
+에러 공통 처리 컨트롤러의 기능을 변경하고자 한다면 ErrorController 인터페이스를 구현하거나, BasicErrorController를 상속받아 기능을 추가할 수 있다.
