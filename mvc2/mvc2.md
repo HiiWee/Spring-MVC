@@ -2284,3 +2284,22 @@ public class WebConfig implements WebMvcConfigurer {
 }
 ```
 > 참고로 default dispatcherType은 REQUEST임으로 특정 오류 페이지 검토가 필요하지 않다면 default 설정을 사용하면 된다. 
+
+<br><br>
+
+## [서블릿 예외 처리 - 인터셉터]
+### 인터셉터 원리와 dispatcherType 구분
+인터셉터는 필터와 같이 dispatcherType을 따로 선택하는 방식은 없다.   
+서블릿이 아닌 스프링이 제공하는 기능이므로 type과 무관하게 항상 실행된다.
+
+반면에 pathPatterns을 제외시키는 excludePathPatterns() 메서드를 이용해 빼줄 수 있다.   
+대부분의 오류 페이지의 url은 정해져 있으므로 이 방법으로 오류 페이지 호출시 인터셉터를 호출하지 않을 수 있다.
+
+### 전체 흐름 `/error-ex 오류 요청`
+- 필터는 DispatchType 으로 중복 호출 제거 ( `dispatchType=REQUEST` )
+- 인터셉터는 경로 정보로 중복 호출 제거( `excludePathPatterns("/error-page/**")` )
+
+1. WAS(/error-ex, dispatchType=REQUEST) -> 필터 -> 서블릿 -> 인터셉터 -> 컨트롤러
+2. WAS(여기까지 전파) <- 필터 <- 서블릿 <- 인터셉터 <- 컨트롤러(예외발생)
+3. WAS 오류 페이지 확인
+4. WAS(/error-page/500, dispatchType=ERROR) -> 필터(x) -> 서블릿 -> 인터셉터(x) -> 컨트롤러(/error-page/500) -> View
