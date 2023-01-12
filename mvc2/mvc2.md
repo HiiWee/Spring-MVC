@@ -2303,3 +2303,25 @@ public class WebConfig implements WebMvcConfigurer {
 2. WAS(여기까지 전파) <- 필터 <- 서블릿 <- 인터셉터 <- 컨트롤러(예외발생)
 3. WAS 오류 페이지 확인
 4. WAS(/error-page/500, dispatchType=ERROR) -> 필터(x) -> 서블릿 -> 인터셉터(x) -> 컨트롤러(/error-page/500) -> View
+
+<br><br>
+
+## [스프링 부터 - 오류 페이지1]
+기존 `WebServerFactoryCustomizer<ConfigurableWebServerFactory>`를 활용한 오류 페이지 등록은 다음과 같은 절차를 가진다.
+1. Custom 오류 페이지 등록
+2. 예외 종류에 따른 페이지 추가(html or templates)
+3. 예외 처리용 Controller 만듦(ErrorPageController.java)
+
+하지만 스프링 부트에서는 이런 과정을 자동화 해준다. 사용자는 단지 적절한 위치에 error page만 만들어두면 된다.
+- default error page는 /error에 저장되며 해당 페이지는 사용자 커스텀으로 변경 가능
+- 서블릿 밖으로 예외 발생 혹은 response.sendError()를 호출하게 되면 해당 `/error`를 호출한다.
+- `BasicErrorController`라는 스프링 컨트롤러를 자동으로 등록한다.
+  - ErrorPage에서 등록한 /error를 매핑해서 처리하는 컨트롤러
+
+### View 선택 우선순위
+1. 뷰 템플릿 `resources/templates/error/**`
+2. 정적 리소스 `resources/static/error/**`
+3. 적용 대상이 없을 때 뷰 이름(error) `resources/templates/error.html`
+
+파일 이름은 error code로 정해지며 만약 `4xx.html`이라면 400번대 오류는 해당 페이지를 오픈한다.   
+또한 404.html과 같이 4xx보다 더 구체적이면 구체적인 페이지의 우선순위가 높다.
