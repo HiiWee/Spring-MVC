@@ -2246,3 +2246,41 @@ GET과 POST의 차이를 두지 않고, 에러가 발생하면 호출되어야 �
 WAS는 단순히 오류 페이지를 요청할 뿐만아니라 오류 정보를 request의 attribute에 추가하여 넘겨준다.   
 (예외, 예외 타입, 오류 메시지, 클라이언트 요청 URI, 오류 발생 서블릿 이름, HTTP 상태 코드 등)   
 오류 정보는 `RequestDispatcher`를 살펴보면 확인할 수 있다.
+
+<br><br>
+
+## [서블릿 예외 처리 - 필터]
+오류가 발생되어서 WAS가 오류페이지를 호출하게 되면 필터, 인터셉터를 모두 재호출 해야할까?   
+일단 초기 요청에서 필요한 필터, 인터셉터를 통해 인증을 마쳤으므로 내부 호출에서 다시 필터, 인터셉터의 로직을 타는건
+비효율적으로 보인다.
+
+이러한 부분들을 방지하기 위해 Servlet은 `DispatcherType`이라는 Enum을 제공한다. 이를통해 고객의 요청인지, 혹은 단순히 ERROR가 발생해
+서버 내부가 호출한 오류인지를 구분할 수 있다.
+
+이런 타입은 HttpServletRequest에 담겨있으며 `getDispatcherType()`을 통해 받아올 수 있다.
+
+### DispatcherType
+- `REQUEST` : 클라이언트 요청 
+- `ERROR` : 오류 요청
+- `FORWARD` : MVC에서 배웠던 서블릿에서 다른 서블릿이나 JSP를 호출할 때 RequestDispatcher.forward(request, response);
+- `INCLUDE` : 서블릿에서 다른 서블릿이나 JSP의 결과를 포함할 때 RequestDispatcher.include(request, response);
+- `ASYNC` : 서블릿 비동기 호출
+
+### 필터에 허용할 DispatcherType 적용
+```java
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+
+    @Bean
+    public FilterRegistrationBean logFilter() {
+        FilterRegistrationBean<Filter> filterRegistrationBean = new FilterRegistrationBean<>();
+        filterRegistrationBean.setFilter(new LogFilter());
+        filterRegistrationBean.setOrder(1);
+        filterRegistrationBean.addUrlPatterns("/*");
+        // 해당 필터는 REQUEST, ERROR 두 가지 경우에 호출되어 사용되는 필터이다.
+        filterRegistrationBean.setDispatcherTypes(DispatcherType.REQUEST, DispatcherType.ERROR);
+        return filterRegistrationBean;
+    }
+}
+```
+> 참고로 default dispatcherType은 REQUEST임으로 특정 오류 페이지 검토가 필요하지 않다면 default 설정을 사용하면 된다. 
