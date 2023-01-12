@@ -2306,7 +2306,7 @@ public class WebConfig implements WebMvcConfigurer {
 
 <br><br>
 
-## [스프링 부터 - 오류 페이지1]
+## [스프링 부트 - 오류 페이지1]
 기존 `WebServerFactoryCustomizer<ConfigurableWebServerFactory>`를 활용한 오류 페이지 등록은 다음과 같은 절차를 가진다.
 1. Custom 오류 페이지 등록
 2. 예외 종류에 따른 페이지 추가(html or templates)
@@ -2328,7 +2328,7 @@ public class WebConfig implements WebMvcConfigurer {
 
 <br><br>
 
-## [스프링 부터 - 오류 페이지2]
+## [스프링 부트 - 오류 페이지2]
 `BasicErrorController`는 단순히 에러 페이지만 나타내는것이 아닌 model에 추가 정보들을 담아서 전달하기도 한다.
 - timestamp, status, error, exception, trace, message, errors, path 등
 ```thymeleafexpressions
