@@ -2411,3 +2411,59 @@ json 형식으로 응답값이 오는것을 알 수 있다.
 
 api 오류의 경우 회원, 상품등과 같이 도메인에 따른 오류 응답 api의 스펙이 다를 수 있기에 api 구성은 세밀하고 복잡하다.    
 이러한 부분을 조금더 편리하게 지원해주는 @ExceptionHandler 어노테이션이 존재한다.
+
+<br><br>
+
+## [HandlerExceptionResolver 시작]
+`HandlerExceptionResolver`를 이용하면 기존 발생한 예외(500)를 잡아서 다른 예외(400, ...)으로 변경할 수 있다.
+예를 들어 `IllegalArgumentException`과 같은 경우 사용자의 잘못된 입력으로 발생하는 경우가 많다.   
+스프링 부트는 해당 예외가 발생하면 500 code를 반환하므로 이를 400(Bad Request)으로 반환할때 사용된다.
+
+HandlerExcetionResolver를 적용하게 되면 핸들러에서 예외가 발생했을때 ExceptionResolver에서 예외 해결 시도를 한다.
+이후 예외를 해결하게 되면 WAS에는 정상응답이 들어가고, 해결하지 못하는 상황이 되면 WAS에는 예외가 전달된다.   
+
+정상 응답 또한 여러가지 방식의 응답이 존재한다.
+
+### 구현
+HandlerExceptionResolver 인터페이스를 구현한다. 이후 WebConfig에서 extendHandlerExceptionResolvers를 오버라이딩한다.   
+> configureHandlerExceptionResolvers()를 사용하면 스프링이 기본으로 동작하는 ExceptionReoslver가 제거됨
+```java
+@Slf4j
+public class MyHandlerExceptionResolver implements HandlerExceptionResolver {
+
+    @Override
+    public ModelAndView resolveException(final HttpServletRequest request, final HttpServletResponse response,
+                                         final Object handler,
+                                         final Exception ex) {
+        log.info("call resolver", ex);
+        try {
+            if (ex instanceof IllegalArgumentException) {
+                log.info("IllegalArgumentException resolver to 400");   // 400 오류로 변경
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, ex.getMessage());
+                return new ModelAndView();  // 기존 예외를 먹고, 400으로 변경한 sendError를 WAS까지 정상 리턴
+            }
+        } catch (IOException e) {
+            log.error("resolver ex", e);
+        }
+        return null;
+    }
+}
+```
+`IllegalArgumentException`이 발생하면 해당 예외를 먹고, `response.sendError`를 통해 `400(Bad Request)`오류를 응답에 담아 WAS에 정상 전달한다.
+정상적인 응답이라면 빈 객체인 `ModelAndView`를 반환한다.
+> 빈 ModelAndView를 반환하는 이유는 마치 try, catch를 하듯 Exception을 처리해 정상 흐름 처럼 변경하기 위함이다.
+
+### HandlerExceptionResolver 반환 값에 따른 DispatcherServlet의 동작 방식
+- 빈 `ModelAndView`: new ModelAndView() 처럼 빈 객체를 반환하면 뷰를 렌더링 하지 않고 정상 흐름으로 서블릿이 리턴됨
+- `ModelAndView` 지정: ModelAndView에 View, Model등의 정보를 지정해서 반환하면 뷰를 렌더링 함
+- `null`: null을 반환하면, 다음 ExceptionResolver를 찾아서 실행함, 만약 처리할 수 있는 ExceptionResolver가 없으면
+  예외 처리가 안되고, 기존에 발생한 예외를 서블릿 밖으로 던짐 -> `WAS까지 진행됨`
+
+### ExceptionResolver 활용
+1. 예외 상태 코드 변환
+   - 예외를 `response.sendError(xxx)`를 통해 변경해 서블릿에서 상태에 따른 오류를 처리하도록 위임한다.
+   - 이후 `WAS`는 서블릿 오류 페이지를 찾아서 내부 호출함
+2. 뷰 템플릿 처리
+   - `ModelAndView`에 값을 채워넣으면 에외에 따른 새로운 오류 화면 뷰 렌더링을 제공함
+3. API 응답 처리
+   - `response.getWriter().println("hello");`처럼 HTTP 응답 바디에 직접 데이터를 넣어준다. 여기에 JSON응답을 하면 API 응답처리가 가능하다.
