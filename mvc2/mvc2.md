@@ -2467,3 +2467,74 @@ public class MyHandlerExceptionResolver implements HandlerExceptionResolver {
    - `ModelAndView`에 값을 채워넣으면 에외에 따른 새로운 오류 화면 뷰 렌더링을 제공함
 3. API 응답 처리
    - `response.getWriter().println("hello");`처럼 HTTP 응답 바디에 직접 데이터를 넣어준다. 여기에 JSON응답을 하면 API 응답처리가 가능하다.
+
+<br><br>
+
+## [HandlerExceptionResolver 활용]
+현재 예외 처리 방식은 예외 발생시 ExceptionResolver를 통해 원하는 예외로 변경하지만 결국 WAS까지 예외가 전달되고
+WAS에서 예외에 맞는 핸들러를 호출하여 사용자에게 오류 페이지 혹은 api를 전달한다.
+
+여기서 굳이 WAS까지 예외가 전달되어야 할 필요가 있을지 고민해보자
+
+### ExceptionResolver에서 한번에 해결
+만약 UserException 이라는 커스텀 예외가 존재할때 이를 ExceptinoResolver에서 한번에 처리하도록 작성해보자
+```java
+@Slf4j
+public class UserHandlerExceptionResolver implements HandlerExceptionResolver {
+
+    public static final String APPLICATION_JSON = "application/json";
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Override
+    public ModelAndView resolveException(final HttpServletRequest request, final HttpServletResponse response,
+                                         final Object handler,
+                                         final Exception ex) {
+        try {
+            if (ex instanceof UserException) {
+                log.info("UserException resolver to 400");
+                // HTTP Accept헤더가 JSON인 경우와 HTML로 요청한 경우 두 가지로 분기
+                String acceptHeader = request.getHeader("accept");
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+
+                if (APPLICATION_JSON.equals(acceptHeader)) {
+                    Map<String, Object> errorResult = new HashMap<>();
+                    errorResult.put("ex", ex.getClass());
+                    errorResult.put("message", ex.getMessage());
+
+                    String result = objectMapper.writeValueAsString(errorResult);
+
+                    response.setContentType("application/json");
+                    response.setCharacterEncoding("utf-8");
+                    response.getWriter().write(result);
+                    return new ModelAndView();
+                }
+                // TEXT/HTML
+                return new ModelAndView("error/500");
+
+            }
+        } catch (IOException e) {
+            log.error("resolver ex", e);
+        }
+        return null;
+    }
+}
+```
+### API 반환
+위의 코드를 살펴보면 response 객체에 400에러와 반환타입의 정의를 한다.   
+또한 에러 결과에 대해서는 Map을 Jackson 라이브러리를 통해 result라는 JSON으로 변환해
+`response.getWriter().write(result);`를 통해 api로 응답한다.   
+이후 비어있는 ModelAndView를 반환하며 응답을 정상처리한다.
+
+이렇게 되면 WAS까지 정상응답이 넘어가고 예외는 넘겨주지 않는다.   
+따라서 UserHandlerExceptionResolver에서 예외에 대한 처리를 마무리 짓게된다.   
+서블릿 컨테이너까지 예외가 올라가며 복잡하고 지저분한 프로세스를 ExceptionResolver를 통해 깔끔하게 처리할 수 있다.
+> 이전 response.sendError()를 통해 전달하게 되면 WAS는 정상응답이지만 예외가 있다고 판단해 오류 페이지를 호출하는데
+> 그러한 로직들이 없고 순수한 API 반환만 존재하기에 가능한 일
+
+### View 반환
+만약 HTTP의 accept HEADER가 application/json이 아니라 html타입 이라면 우리가 만들었고 스프링에서 기본으로 사용하는 경로인
+templates/error/500.html을 반환한다.
+
+### 정리
+하지만 ExceptionResolver를 구현하는 것 마지도 상당히 복잡함을 알 수 있다.
+따라서 스프링이 제공하는 ExceptionResolver를 사용하면 이를 해소할 수 있다.
