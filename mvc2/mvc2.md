@@ -2353,3 +2353,25 @@ public class WebConfig implements WebMvcConfigurer {
 스프링 부트를 이용해 오류 `페이지`를 출력하는 방법은 크게 어려움이 없다.   
 하지만, API 통신을 이용한다면 실제 오류를 전달하는 방식에서 많은 고려 사항이 필요하다.
 서버와 클라이언트간 어떤 오류 데이터를 주고 받을지에 대한 규약을 먼저 설정하고, 이후에 해당 데이터를 JSON으로 보내주어야 한다.
+
+<br><br>
+
+# <API 예외 처리>
+## [시작]
+단순 HTML 페이지로 오류 페이지를 구성하는 방식은 간단하다. 하지만 api는 어떨까?   
+api는 각 오류 상황에 따른 응답 스펙을 정하고, JSON으로 데이터를 내려주어야 하므로 조금 더 복잡하고 고려해야할 부분들이 많다.
+
+api 호출시 오류가 발생했을때 HTML 파일이 내려오면 안되므로 새로운 핸들러를 추가해야 한다.
+동일하게 @RequestMapping을 사용하지만, 해당 속성 중 `produces = APPLICATION_JSON_VALUE`로 적용하면
+HTTP의 `Accept` 헤더가 `application/json`인 요청을 받게 된다. 이를 통해 같은 URL 요청 핸들러가 2개가 있어도 구분할 수 있다.   
+따라서 이를 통해 api 오류 응답을 구성해보자
+
+```java
+@RequestMapping("/error-page/500")
+public String errorPage500(HttpServletRequest request, HttpServletResponse response) { ... }
+
+@RequestMapping(value = "/error-page/500", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> errorPage500Api() { ... }
+```
+이렇게만 사용해도 기존의 HTML 반환을 JSON 반환으로 변경할 수 있다.
+> ResponseEntity에 담긴 Map 구조는 Jackson 라이브러리를 통해 JSON 구조로 변경됨
