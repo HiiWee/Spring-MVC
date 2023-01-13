@@ -2375,3 +2375,39 @@ public String errorPage500(HttpServletRequest request, HttpServletResponse respo
 ```
 이렇게만 사용해도 기존의 HTML 반환을 JSON 반환으로 변경할 수 있다.
 > ResponseEntity에 담긴 Map 구조는 Jackson 라이브러리를 통해 JSON 구조로 변경됨
+
+<br><br>
+
+## [스프링 부트 기본 오류 처리]
+커스텀 오류 응답 api를 사용하지 않게 되면 스프링은 `BasicErrorController`를 이용해 기본 오류 api를 응답한다.
+
+BasicErrorController를 살펴보면 errorHtml(), error() 핸들러로  html 응답과 api 응답을 구분하는 모습을 보여준다.
+기본 설정인 /error로 오류 페이지로 요청하게 되고 만약 accept값이 application/json이라면 error() 핸들러를 호출한다.
+```java
+// BasicErrorController내 코드
+@RequestMapping(produces = MediaType.TEXT_HTML_VALUE)
+public ModelAndView errorHtml(HttpServletRequest request, HttpServletResponse response) {
+    HttpStatus status = getStatus(request);
+    Map<String, Object> model = Collections
+            .unmodifiableMap(getErrorAttributes(request, getErrorAttributeOptions(request, MediaType.TEXT_HTML)));
+    response.setStatus(status.value());
+    ModelAndView modelAndView = resolveErrorView(request, response, status, model);
+    return (modelAndView != null) ? modelAndView : new ModelAndView("error", model);
+}
+
+@RequestMapping
+public ResponseEntity<Map<String, Object>> error(HttpServletRequest request) {
+    HttpStatus status = getStatus(request);
+    if (status == HttpStatus.NO_CONTENT) {
+        return new ResponseEntity<>(status);
+    }
+    Map<String, Object> body = getErrorAttributes(request, getErrorAttributeOptions(request, MediaType.ALL));
+    return new ResponseEntity<>(body, status);
+}
+```
+
+기존의 WebServerCustomizer의 `@Configuration`을 주석처리하고 에러 페이지를 요청하게 되면 BasicErrorController의 error()가 호출되어
+json 형식으로 응답값이 오는것을 알 수 있다.
+
+api 오류의 경우 회원, 상품등과 같이 도메인에 따른 오류 응답 api의 스펙이 다를 수 있기에 api 구성은 세밀하고 복잡하다.    
+이러한 부분을 조금더 편리하게 지원해주는 @ExceptionHandler 어노테이션이 존재한다.
