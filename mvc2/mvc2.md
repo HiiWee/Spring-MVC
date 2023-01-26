@@ -2607,4 +2607,13 @@ if (ex instanceof ResponseStatusException) {
     return resolveResponseStatusException((ResponseStatusException) ex, request, response, handler);
 }
 ```
-이 또한 sendError를 통해 특정 상태 코드 및 에러 발생 reason을 WAS에 전달한다.
+그리고 sendError를 통해 특정 상태 코드 및 에러 발생 reason을 WAS에 전달한다.
+
+> sendError와 API 통신   
+> 우리가 이용한 ResponseStatusExceptionResolver는 모두 sendError를 통해 발생되는 예외에 우리가 원하는 HTTP 상태 코드를 지정한다. 그리고 빈 ModelAndView를 반환한다. 
+> 
+> ModelAndView를 반환하게 되면 WAS로 정상 응답이 반환되지만 예외가 발생했다는 error확인 이후 dispatcherType이 ERROR인 상태로 /error를 내부 요청한다.
+> 
+> 만약 여기서 sendError를 사용하지 않고 빈 ModelAndView를 반환하면 WAS의 오류 확인 및 내부 페이지의 호출 없이 즉시 api응답을 리턴한다.   
+> 
+> **따라서 우리가 만들었던 ResponseStatusExceptionResolver는 sendError를 반드시 거치므로 WAS의 내부 호출이 반드시 일어난다.**
