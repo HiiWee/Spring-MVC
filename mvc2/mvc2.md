@@ -2538,3 +2538,73 @@ templates/error/500.html을 반환한다.
 ### 정리
 하지만 ExceptionResolver를 구현하는 것 마지도 상당히 복잡함을 알 수 있다.
 따라서 스프링이 제공하는 ExceptionResolver를 사용하면 이를 해소할 수 있다.
+
+<br><br>
+
+## 스프링이 제공하는 ExceptionResolver1
+### Spring Boot의 기본 제공 ExceptionResolver
+`HandlerExceptionResolverComposite`에 다음과 같은 순서로 등록된다.
+1. ExceptionHandlerExceptionResolver
+2. ResponseStatusExceptionResolver
+3. DefaultHandlerExceptionResolver (가장 낮은 우선순위)
+
+가장 먼저 2번에 대해 알아보자
+
+### ResponseStatusExceptionResolver
+발생하는 예외에 따라서 HTTP 상태 코드를 지정해주는 역할이며 두 가지 경우를 처리함
+1. `@ResponseStatus`가 달려있는 예외
+2. `ResponseStatusException` 예외
+
+### **@ResponseStatus가 달려있는 예외**   
+커스텀 예외에 @ResponseStatus 애노테이션을 붙이면 지정한 HTTP Status의 code가 적용된다.   
+(기존의 모든 예외가 발생하게 되면 500 code이지만 이를 변경할 수 있음)
+
+```java
+@ResponseStatus(code = HttpStatus.BAD_REQUEST, reason = "${message or messages.properties key}")
+public class BadRequestException extends RuntimeException {
+}
+```
+
+실제 위의 애노테이션을 처리하는 `@ResponseStatusExceptionResolver`의 코드를 살펴보면 다음과 같이 sendError를 호출해 우리가 지정한 코드로
+오류를 WAS에서 다시 오류 페이지를 내부 요청한다.
+
+```java
+protected ModelAndView applyStatusAndReason(int statusCode, @Nullable String reason, HttpServletResponse response)
+        throws IOException {
+
+    if (!StringUtils.hasLength(reason)) {
+        response.sendError(statusCode);
+    }
+    else {
+        String resolvedReason = (this.messageSource != null ?
+                this.messageSource.getMessage(reason, null, reason, LocaleContextHolder.getLocale()) :
+                reason);
+        response.sendError(statusCode, resolvedReason);
+    }
+    return new ModelAndView();
+}
+```
+
+또한 애노테이션의 resson 속성은 messages.properties에 등록된 커스텀 에러 메시지의 key를 이용하여 MessageSource에서 찾는 기능도 있다.
+
+### **ResponseStatusException**
+위의 애노테이션 방법은 오로지 커스텀한 예외에서만 적용할 수 있고, 라이브러리의 에외 코드 같이 내가 수정할 수 없다면 적용 불가하다.
+따라서 ResponseStatusException을 사용해 발생할 예외의 경우 원하는 HTTP code로 응답하도록 설정할 수 있다.
+이곳에서도 messages.properties의 MessageSource를 적용할 수 있다.
+
+```java
+ @GetMapping("/api/response-status-ex2")
+  public String responseStatusEx2() {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "error.bad", new
+  IllegalArgumentException());
+  }
+```
+
+이 또한 ResponseStatusExceptionResolver의 실제 코드를 살펴보면 다음과 같이 예외의 종류가 ResponseStatusException인지 확인하는 코드가 존재한다.
+
+```java
+if (ex instanceof ResponseStatusException) {
+    return resolveResponseStatusException((ResponseStatusException) ex, request, response, handler);
+}
+```
+이 또한 sendError를 통해 특정 상태 코드 및 에러 발생 reason을 WAS에 전달한다.
