@@ -2541,7 +2541,7 @@ templates/error/500.html을 반환한다.
 
 <br><br>
 
-## 스프링이 제공하는 ExceptionResolver1
+## [스프링이 제공하는 ExceptionResolver1]
 ### Spring Boot의 기본 제공 ExceptionResolver
 `HandlerExceptionResolverComposite`에 다음과 같은 순서로 등록된다.
 1. ExceptionHandlerExceptionResolver
@@ -2617,3 +2617,75 @@ if (ex instanceof ResponseStatusException) {
 > 만약 여기서 sendError를 사용하지 않고 빈 ModelAndView를 반환하면 WAS의 오류 확인 및 내부 페이지의 호출 없이 즉시 api응답을 리턴한다.   
 > 
 > **따라서 우리가 만들었던 ResponseStatusExceptionResolver는 sendError를 반드시 거치므로 WAS의 내부 호출이 반드시 일어난다.**
+
+<br><br>
+
+## [스프링이 제공하는 ExceptionResolver2]
+다음 컨트롤러를 살펴보자
+```java
+@GetMapping("/api/default-handler-ex")
+public String defaultException(@RequestParam Integer data) {
+    return "ok";
+}
+```
+
+만약 요청 url이 `/api/default-handler-ex?data=10`과 같이 들어온다면 data 매개변수에 정상적으로 바인딩 될것이다.   
+하지만, `/api/default-handler-ex?data=dd`와 같이 정수가 들어가야 할 쿼리스트링에 문자열값이 입력된다면 스프링은 데이터를 바인딩할 수 없다는 오류를 뱉는다.
+
+그렇다면 이는 서버의 잘못일까 클라이언트의 잘못일까?   
+위의 요청이 사용자가 form에 가격을 입력해야 하는 form일때 사용자의 숫자가 아닌 입력은 곧 사용자의 잘못이다. 따라서 400 Bad Request가 반환된다.  
+
+### DefaultHandlerExceptionResolver의 역할
+Spring은 모든 예외를 500 서버 에러를 내뱉는다. 하지 파라미터 바인딩은 대부분 클라이언트가 HTTP 요청 정보를 잘못 호출해서 발생하는 문제이다. 
+HTTP 에서는 이런 경우 HTTP 상태 코드 400을 사용하도록 되어 있다.
+
+이런 파라미터 바인딩 에러는 DefaultHandlerExceptionResolver에서 처리하고 있는데 실제 내부코드는 다음과 같다.
+```java
+@Override
+	@Nullable
+	protected ModelAndView doResolveException(
+			HttpServletRequest request, HttpServletResponse response, @Nullable Object handler, Exception ex) {
+
+		try {
+			if (ex instanceof HttpRequestMethodNotSupportedException) {
+				return handleHttpRequestMethodNotSupported(
+						(HttpRequestMethodNotSupportedException) ex, request, response, handler);
+			}
+			else if (ex instanceof HttpMediaTypeNotSupportedException) {
+				return handleHttpMediaTypeNotSupported(
+						(HttpMediaTypeNotSupportedException) ex, request, response, handler);
+			}
+			else if (ex instanceof HttpMediaTypeNotAcceptableException) {
+				return handleHttpMediaTypeNotAcceptable(
+						(HttpMediaTypeNotAcceptableException) ex, request, response, handler);
+			}
+        ...
+        ...
+        중략
+        ...
+        
+		}
+		catch (Exception handlerEx) {
+			if (logger.isWarnEnabled()) {
+				logger.warn("Failure while trying to resolve exception [" + ex.getClass().getName() + "]", handlerEx);
+			}
+		}
+		return null;
+	}
+```
+위와 같이 파라미터 바인딩에 관한 오류는 모두 handleXXX 라는 메서드로 처리하는데 내부적으로는 다음과 같은 로직을 갖는다.
+```java
+protected ModelAndView handleBindException(BindException ex, HttpServletRequest request,
+        HttpServletResponse response, @Nullable Object handler) throws IOException {
+
+    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+    return new ModelAndView();
+}
+```
+
+여기서도 sendError를 통해 사용자가 잘못된 입력으로 인한 예외로 변경해주고 있다.
+결국 WAS는 해당 에러에 맞는 오류 페이지(/error)를 호출한다.
+
+### 정리
+HandlerExceptionResolver는 api응답의 경우 response에 직접 데이터를 넣고 사용하지도 않을 빈 ModelAndView 객체를 반환해야한다.
+이를 해결하기 위해 스프링은 ExceptionHandlerExceptionResolver 클래스의 @ExceptionHandler라는 강력한 Annotation을 제공한다.
