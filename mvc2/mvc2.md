@@ -2722,3 +2722,33 @@ html을 제공할때는 알맞은 오류 페이지를 단순히 반환하면 되
   - 참고: https://docs.spring.io/spring-framework/docs/current/reference/html/web.html#mvc-ann-exceptionhandler-args
 
 실제 예제 코드에 따른 동작은 pdf를 참고하자
+
+<br><br>
+
+## [@ControllerAdvice]
+@ControllerAdvice를 이용하면 여러 컨트롤러에 @ExceptionHandler, @InitBinder 기능을 부여한다.
+또한 여러개의 컨트롤러에 @InitBinder와 @ModelAttribute도 적용할 수 있다.
+
+@RestControllerAdvice = @ResponseBody + @ControllerAdvice로 api 통신에서 사용된다.
+
+### @ControllerAdvice 사용
+- 특별한 대상을 지정하지 않으면 모든 컨트롤러에 적용된다.
+- 특정 패키지의 모든 컨트롤러에 적용할 수 있다.
+- 특정 컨트롤러 클래스에 적용할 수 있다.
+- 자세한 사용법은 공식문서를 참고하자
+  - https://docs.spring.io/spring-framework/docs/current/reference/html/web.html#mvc-ann-controller-advice
+
+### 강의 질문에 대한 내 답변
+- Q.
+  - 안녕하세요. @ControllerAdvice로 예외처리를 하는 부분에서 궁금증이 생겨 질문남기게 되었습니다.
+    @RequestBody를 통해 값을 받는 요청들은
+    @ExceptionHandler(MethodArgumentNotValidException.class) 설정을 통해서 예외처리를 할 수 있는데, @ModelAttribute를 통해서 값을 받는 요청들은 ControllerAdvice에서 어떠한 Exception을 통해 걸러서 예외처리를 해야하는지 감이 잡히지 않습니다.
+    @ModelAttribute를 통해 값을 받는 경우 어떠한 방식으로 공통예외처리를 할 수 있는 걸까요?
+- A.
+  - ModelAttribute의 바인딩 시점에 발생되는 오류시점에는 정수타입의 값이 입력되어야 하는곳에 문자열이 입력되는 부분에서 발생할 수 있습니다.(TypeMismatch)   
+    실제로 쿼리스트링을 통해 int타입 값에 문자열을 입력하게되면 예외가 발생하지 않고 BeanPropertyBindingResult가 생성한 에러 메시지가 로그에 찍히게 됩니다.   
+    이는 사실 직접적인 예외가 발생했다기 보다는 BeanPropertyBindingResult 객체가 예외를 먹고 예외에 관련된 정보를 로그로 출력해준다라고 생각하시면 될 것 같습니다.   
+    스프링 공식문서에서는 기본적으로 @ModelAttribute에 대한 예외 처리는 BindingResult를 이용하여 처리하는 것을 권장하고 있습니다.   
+    https://docs.spring.io/spring-framework/docs/current/reference/html/web.html#mvc-ann-modelattrib-method-args   
+    더하여 강사님의 MVC1 BindingResult2 강의를 참고해보셔도 좋을것 같습니다!   
+    > 직접적으로 @ModelAttribute의 예외를 캐치해서 @ExceptionHandler로 처리하는 방법은 찾아봐도 나오지 않아 잘 모르겠습니다만 BindingResult라는 좋은 객체가 존재하므로 해당 객체를 이용해도 좋을것 같다는 생각에 댓글 달아봤습니다!
