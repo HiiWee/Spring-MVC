@@ -2689,3 +2689,36 @@ protected ModelAndView handleBindException(BindException ex, HttpServletRequest 
 ### 정리
 HandlerExceptionResolver는 api응답의 경우 response에 직접 데이터를 넣고 사용하지도 않을 빈 ModelAndView 객체를 반환해야한다.
 이를 해결하기 위해 스프링은 ExceptionHandlerExceptionResolver 클래스의 @ExceptionHandler라는 강력한 Annotation을 제공한다.
+
+<br><br>
+
+## [@ExceptionHandler]
+html을 제공할때는 알맞은 오류 페이지를 단순히 반환하면 되지만, API 호출의 경우 Exception을 처리하는 방식이 다양하고, 동일한 예외라도
+컨트롤러마다 처리가 다를 수 있다. 외에도 다음과 같은 api 예외처리의 어려움이 존재한다.
+
+1. `HandlerExceptionResolver`: API응답에 필요없는 ModelAndView 반환
+2. `HandlerExceptionResolver`: HttpServletResponse에 직접 응답 데이터 삽입
+3. 특정 컨트롤러에서만 발생하는 예외 별도 처리의 어려움
+
+### `ExceptionHandlerExceptionResolver`의 @ExceptionHandler
+이를 위해 스프링은 @ExceptionHandler라는 에외처리 어노테이션을 제공한다.   
+스프링의 예외 처리를 위한 기본 ExceptionResolver 중에서 가장 우선순위가 높다.
+
+### @ExceptionHandler 사용
+- 어노테이션을 선언하고 해당 컨트롤러에서 처리할 예외를 지정한다.
+  - 어노테이션의 속성으로 지정할 수 있고, 이를 생략하고 메소드 파라미터로 예외를 지정 할 수 도 있다.
+  - 해당 예외 및 해당 예외의 자식 예외까지 잡을 수 있음
+- 항상 자세한것이 우선순위를 갖는다.
+  - RuntimException과 Exception을 처리하는 ExceptionHandler가 존재할때 RuntimeException이 발생하면 RuntimeException 처리기가 동작하고,
+    Exception이 발생하면 Exception을 처리하는 처리기가 동작한다.
+- 여러 예외를 한번에 처리할 수 있다.
+  ```java
+  @ExceptionHandler({AException.class, BException.class})
+  public String ex(Exception e) {
+  log.info("exception e", e);
+  }
+  ```
+- 컨트롤러 파라미터 및 응답처럼 다양한 파라미터 및 응답을 지정할 수 있다.
+  - 참고: https://docs.spring.io/spring-framework/docs/current/reference/html/web.html#mvc-ann-exceptionhandler-args
+
+실제 예제 코드에 따른 동작은 pdf를 참고하자
