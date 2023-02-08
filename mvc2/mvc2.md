@@ -20,7 +20,7 @@
   * `숫자`: 0, 34, 3.0, 12.3,…
   * `불린`: true, false
   * `널`: null
-  * `리터럴 토큰`: one, sometext, main,…
+  * `리터럴 토큰`: one, sometext, main,…$
 * 문자 연산:
   * 문자 합치기: `+`
   * 리터럴 대체: `|The name is ${name}|`
@@ -2752,3 +2752,28 @@ html을 제공할때는 알맞은 오류 페이지를 단순히 반환하면 되
     https://docs.spring.io/spring-framework/docs/current/reference/html/web.html#mvc-ann-modelattrib-method-args   
     더하여 강사님의 MVC1 BindingResult2 강의를 참고해보셔도 좋을것 같습니다!   
     > 직접적으로 @ModelAttribute의 예외를 캐치해서 @ExceptionHandler로 처리하는 방법은 찾아봐도 나오지 않아 잘 모르겠습니다만 BindingResult라는 좋은 객체가 존재하므로 해당 객체를 이용해도 좋을것 같다는 생각에 댓글 달아봤습니다!
+
+<br><br>
+
+# <스프링 타입 컨버터>
+## [스프링 타입 컨버터 소개]
+서블릿을 이용하게 되면 HttpServletRequest 객체의 getParameter를 통해 쿼리스트링 값을 접근할 수 있다.
+이들은 모두 문자열 값으로 반환되므로 사용자가 원하는 타입으로 캐스팅하여 사용해왔다.
+
+스프링은 이를 편리하게 하고자 중간에서 TypeConvetering 과정을 지원해준다.
+- 요청 파라미터, @RequestParam, @PathVariable, @ModelAttribute
+- @Value 등으로 YML 정보 읽을때
+- XML에 넣은 스프링 빈 정보를 변환
+- 뷰 렌더링시   
+와 같은 상황에서 타입 컨버팅을 지원해준다.
+
+### 커스텀한 타입 컨버팅
+Conveter<S, T>라는 인터페이스를 구현하면 S 타입을 T 타입으로 컨버팅하도록 커스텀하게 등록할 수 있다.
+```java
+public interface Converter<S, T> {
+  T convert(S source);
+}
+```
+
+> 과거에는 PropertyEditor를 이용해 타입을 변환했지만, 동시성 문제로 인해 타입 변환때마다 매번 객체를 생성해야 했다.
+> 현재 Converter 인터페이스의 등장으로 해당 문제들은 해결됐다.
