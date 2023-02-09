@@ -2777,3 +2777,22 @@ public interface Converter<S, T> {
 
 > 과거에는 PropertyEditor를 이용해 타입을 변환했지만, 동시성 문제로 인해 타입 변환때마다 매번 객체를 생성해야 했다.
 > 현재 Converter 인터페이스의 등장으로 해당 문제들은 해결됐다.
+
+<br><br>
+
+## [타입 컨버터 - Converter]
+타입 컨버터를 사용하려면 `org.springframework.core.convert.converter.Converter`를 구현하면 된다.
+
+실제 예제 코드를 참고하면 Converter의 간단한 convert 기능을 확인할 수 있다. 하지만, 직접 구현하여 사용하는 방식은 불편하다.   
+스프링은 타입 컨버터를 등록하고 관리하며 편리하 변환 기능을 제공하기 위해 `ConversionService`기능을 제공한다.
+
+### 용도에 따른 타입 컨버터
+스프링은 용도에 따라 다양한 컨버터 인터페이스를 제공한다.
+- Converter: 기본 타입 컨버터
+- ConverterFactory: 전체 클래스 계층 구조가 필요할 때 사용되는 컨버터
+- GenericConverter: 정교한 구현, 대상 필드의 애노테이션 정보 사용 가능
+- ConditionalGenericConverter: 특정 조건이 참인 경우에만 실행
+
+실제 위 인터페이스를 살펴보면 수많은 구현체가 존재한다.
+
+> 공식 문서: https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#core-converter
