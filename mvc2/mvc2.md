@@ -2845,3 +2845,67 @@ WebMvcConfigurer 인터페이스를 구현한 WebConfig에서 addFormatters 메�
 
 > 추가적으로 @RequestBody에서 가져오는 Json 데이터에 대해 StringToIpPortConverter가 등록할지 확인했지만,
 > 기본적으로 @RequestBody는 ObjectMapper를 사용하는 HttpMessageConverter가 동작하므로 TypeConveter가 사용되지 않는다.
+
+<br><br>
+
+## [뷰 템플릿에 컨버터 적용하기]
+뷰 템플릿에 데이터를 전달할떄도 컨버터를 적용할 수 있다.
+
+### 테스트1 - 뷰 템플릿에서의 Converter 동작
+<img width="733" alt="image" src="https://user-images.githubusercontent.com/66772624/218805672-e352f910-169d-4b98-98ec-5c98fdd1f654.png">
+위와 같은 컨트롤러에서 Model에 값을 담고 View를 통해 값을 전달했을때 뷰 템플릿은 다음과 같다.
+
+```html
+  <li>${number}: <span th:text="${number}" ></span></li>
+  <li>${{number}}: <span th:text="${{number}}" ></span></li>
+  <li>${ipPort}: <span th:text="${ipPort}" ></span></li>
+  <li>${{ipPort}}: <span th:text="${{ipPort}}" ></span></li>
+```
+Model에 담은 2개를 두 가지 방식으로 출력하고 있다. 여기서 하나의 중괄호는 변수에 대한 표현식이지만, 두 개의 중괄호는
+자동으로 ConversionService를 호출해 변환된 결과를 출력한다. 실제 응답은 다음과 같이 나타난다.
+
+```text
+${number}: 10000
+${{number}}: 10000
+${ipPort}: hello.typeconverter.type.IpPort@59cb0946
+${{ipPort}}: 127.0.0.1:8080
+```
+ipPort의 경우 변수에 대한 표현을 하게 되면 toString값이 출력되지만, 두 개의 중괄호는 컨버전 서비스를 통해 컨버팅한 결과를 나타낸다.
+> 추가적으로 10000이 찍히는 부분은 컨버터를 적용할때와 하지 않을떄의 값이 동일한데 이는 타임리프에서 컨버터를 적용하지 않아도
+> 자동으로 Integer -> String으로 변환하여 출력하기 때문이다.
+
+<img width="600" alt="image" src="https://user-images.githubusercontent.com/66772624/218807090-2d5ca08e-32e9-4339-83ed-88e25b853c79.png">
+
+실제 로그에서도 IpPortToStringConvert가 동작함을 알 수 있다.
+```text
+2023-02-15 02:07:38.452  INFO 91738 --- [nio-8080-exec-1] h.t.converter.IntegerToStringConverter   : convert source=10000
+2023-02-15 02:07:38.452  INFO 91738 --- [nio-8080-exec-1] h.t.converter.IpPortToStringConverter    : convert source=hello.typeconverter.type.IpPort@59cb0946
+```
+
+### 테스트2 - 폼 데이터에서 Converter 동작
+<img width="600" alt="image" src="https://user-images.githubusercontent.com/66772624/218807090-2d5ca08e-32e9-4339-83ed-88e25b853c79.png">
+
+위와 같은 GET -> POST로 흐름이 이어지는 컨트롤러가 존재할때를 살펴보자   
+우선 IpPort라는 값을 Form으로 감싸서 Model에 담고 View로 전송한다. View에서는 다음과 같이 값을 출력한다.
+```html
+<form th:object="${form}" th:method="post">
+  th:field <input type="text" th:field="*{ipPort}"><br/>
+  th:value <input type="text" th:value="*{ipPort}">(보여주기 용도)<br/> <input type="submit"/>
+</form>
+```
+<img width="331" alt="image" src="https://user-images.githubusercontent.com/66772624/218809044-506c6e83-27bf-45b8-8ec5-bc79c89ed47b.png">
+
+이때 ipPort에 대한 결과 값이 th:field에서는 IpPortToStringConverter를 통해 String으로 컨버팅된 값이 출력되지만, th:value는 toString값이 출력된다.   
+이는 th:field에서 자동적으로 컨버전 서비스를 통해 컨버팅을 하기 때문이다.
+
+이후 제출 버튼을 클릭하게 되면 POST로 현재 ipPort의 데이터가 전송되는데 이떄 @ModelAttribute를 통해 Form 객체를 만들때는
+StringToIpPortConverter의 동작이 이루어지게 된다.
+
+이후 POST시 Form 객체를 다시 Model에 담아 View를 호출하는데 이때도 IpPortToStringConverter가 동작한다.
+따라서 위의 흐름은 총 3번의 컨버터를 호출하게 된다.
+```text
+2023-02-15 02:15:18.640  INFO 91738 --- [nio-8080-exec-7] h.t.converter.IpPortToStringConverter    : convert source=hello.typeconverter.type.IpPort@59cb0946
+2023-02-15 02:15:21.911  INFO 91738 --- [nio-8080-exec-9] h.t.converter.StringToIpPortConverter    : convert source=127.0.0.1:8080
+2023-02-15 02:15:21.913  INFO 91738 --- [nio-8080-exec-9] h.t.converter.IpPortToStringConverter    : convert source=hello.typeconverter.type.IpPort@59cb0946
+
+```
