@@ -2824,3 +2824,24 @@ ConversionService는 인터페이스이므로 그 자체로는 구현할 수 없
 15:30:46.782 [main] INFO hello.typeconverter.converter.StringToIpPortConverter - convert source=127.0.0.1:8080
 15:30:46.782 [main] INFO hello.typeconverter.converter.IpPortToStringConverter - convert source=hello.typeconverter.type.IpPort@59cb0946
 ```
+
+<br><br>
+
+## [스프링에 Converter 적용하기]
+이전 시간에는 DefaultConversionService를 생성하여 직접 등록하고 해당 DefafultConversionService의 인스턴스를 이용해 직접 컨버팅을 했다.   
+스프링은 @RequestParam, @ModelAttribute, @PathVariable과 같은 곳에서는 자동으로 컨버전 서비스 빈을 이용해 데이터가 컨버팅 된다.
+
+스프링은 내부적으로 수많은 컨버터 타입들을 미리 제공하고 있으므로 간단한 데이터(정수, 문자 등)에 대한 컨버터는 존재한다.   
+하지만 IpPort와 같은 컨버팅 작업은 커스텀 컨버터를 등록해야 한다.
+
+### 커스텀 컨버터 등록하기
+WebMvcConfigurer 인터페이스를 구현한 WebConfig에서 addFormatters 메소드를 오버라이딩 한다.    
+해당 메소드는 컨버터 혹은 포메터를 추가할때 사용된다.
+![image](https://user-images.githubusercontent.com/66772624/218775549-617f5994-d013-482b-9075-39cd034854cf.png)
+
+이후 registry 매개인자에 addConverter를 하여 이전 시간에 테스트 코드를 만들었던 것처럼 커스텀 컨버터를 등록한다.
+
+![image](https://user-images.githubusercontent.com/66772624/218776026-e756304a-4077-4a46-a8e4-16bb30fa1044.png)
+
+> 추가적으로 @RequestBody에서 가져오는 Json 데이터에 대해 StringToIpPortConverter가 등록할지 확인했지만,
+> 기본적으로 @RequestBody는 ObjectMapper를 사용하는 HttpMessageConverter가 동작하므로 TypeConveter가 사용되지 않는다.
