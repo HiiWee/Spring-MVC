@@ -2760,7 +2760,7 @@ html을 제공할때는 알맞은 오류 페이지를 단순히 반환하면 되
 서블릿을 이용하게 되면 HttpServletRequest 객체의 getParameter를 통해 쿼리스트링 값을 접근할 수 있다.
 이들은 모두 문자열 값으로 반환되므로 사용자가 원하는 타입으로 캐스팅하여 사용해왔다.
 
-스프링은 이를 편리하게 하고자 중간에서 TypeConvetering 과정을 지원해준다.
+스프링은 이를 편리하게 하고자 중간에서 TypeConverting 과정을 지원해준다.
 - 요청 파라미터, @RequestParam, @PathVariable, @ModelAttribute
 - @Value 등으로 YML 정보 읽을때
 - XML에 넣은 스프링 빈 정보를 변환
@@ -2796,3 +2796,32 @@ public interface Converter<S, T> {
 실제 위 인터페이스를 살펴보면 수많은 구현체가 존재한다.
 
 > 공식 문서: https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#core-converter
+
+<br><br>
+
+## [컨버전 서비스 - ConversionService]
+ConversionService는 개별 컨버터들을 모아서 편리하게 사용할 수 있도록 인터페이스를 제공해준다.
+
+실제 ConversionService 인터페이스를 보면 canConvert()와 같이 컨버팅 할 수 있는지 확인 여부와 Convert()같은 실제 컨버팅을 위한
+메소드가 존재한다.
+
+### DefaultConversionService
+ConversionService는 인터페이스이므로 그 자체로는 구현할 수 없다. 스프링에서는 해당 서비스의 구현체로 DefaultConversionService를 제공한다.
+> 추가로 컨버터를 등록하는 ConversionRegistry 인터페이스도 구현하고 있다.
+
+이렇게 두 개의 인터페이스는 각각 컨버터 사용과 등록에 초점이 맞춰져 있는 인터페이스이며 등록과 사용의 관심사를 분리할 수 있다.   
+클라이언트 입장에선 등록하는 과정은 모르고 사용하는 방법만 관심이 있으므로 ISP를 만족한다.
+
+### ConversionService Test
+![스크린샷 2023-02-14 오후 4.06.01.png](..%2F..%2F..%2F..%2F..%2F..%2Fvar%2Ffolders%2Fn6%2Fr63vkzgn4pj0krhd521rygbc0000gn%2FT%2FTemporaryItems%2FNSIRD_screencaptureui_ZLJ2pf%2F%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202023-02-14%20%EC%98%A4%ED%9B%84%204.06.01.png)
+
+실제 위의 테스트를 보면 DefaultConversionService에 우리가 만든 커스텀 컨버터를 등록하여 사용하고 있다.
+특정 컨버터를 등록만 해놓으면 해당 컨버터가 컨버팅할 수 있는 데이터라면 컨버터가 동작한다.
+
+각 컨버터의 로그를 통해 실제 커스텀 컨버터들이 동작함을 알 수 있다.
+```java
+15:30:46.745 [main] INFO hello.typeconverter.converter.IntegerToStringConverter - convert source=10
+15:30:46.780 [main] INFO hello.typeconverter.converter.StringToIntegerConverter - convert source=10
+15:30:46.782 [main] INFO hello.typeconverter.converter.StringToIpPortConverter - convert source=127.0.0.1:8080
+15:30:46.782 [main] INFO hello.typeconverter.converter.IpPortToStringConverter - convert source=hello.typeconverter.type.IpPort@59cb0946
+```
