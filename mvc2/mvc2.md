@@ -2813,8 +2813,7 @@ ConversionService는 인터페이스이므로 그 자체로는 구현할 수 없
 클라이언트 입장에선 등록하는 과정은 모르고 사용하는 방법만 관심이 있으므로 ISP를 만족한다.
 
 ### ConversionService Test
-![스크린샷 2023-02-14 오후 4.06.01.png](..%2F..%2F..%2F..%2F..%2F..%2Fvar%2Ffolders%2Fn6%2Fr63vkzgn4pj0krhd521rygbc0000gn%2FT%2FTemporaryItems%2FNSIRD_screencaptureui_ZLJ2pf%2F%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202023-02-14%20%EC%98%A4%ED%9B%84%204.06.01.png)
-
+<img width="871" alt="스크린샷 2023-02-14 오후 4 05 33" src="https://user-images.githubusercontent.com/66772624/218665223-ca641c0e-ca03-48ca-86fe-330c9c9211e7.png">
 실제 위의 테스트를 보면 DefaultConversionService에 우리가 만든 커스텀 컨버터를 등록하여 사용하고 있다.
 특정 컨버터를 등록만 해놓으면 해당 컨버터가 컨버팅할 수 있는 데이터라면 컨버터가 동작한다.
 
