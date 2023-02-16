@@ -2935,3 +2935,20 @@ Formatter 인터페이스는 Printer와 Parser 인터페이스를 상속받는�
 > `Formatter`: 포맷터
 > `AnnotationFormatterFactory`: 필드 타입, 애노테이션 정보를 활용할 수 있는 포맷터    
 > **공식문서**: https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#format
+
+<br><br>
+  
+## [포맷터를 지원하는 컨버전 서비스]
+`DefaultFormattingConversionService`를 이용하면 포맷터를 지원하는 컨버전 서비스를 사용할 수 있다. 이 둘은 어찌보면 성격이 비슷하기에
+이렇게 합쳐서 지원한다.
+
+<img width="1099" alt="image" src="https://user-images.githubusercontent.com/66772624/219322998-42cd3fef-1053-4b56-98d9-c699b1d54767.png">
+
+위와 같은 테스트를 이용하면 실제 컨버터와 포맷터를 같이 사용할 수 있다.
+
+### FormattingConversionService 인터페이스
+DefaultFormattingConversionService는 FormattingConversionService 인터페이를 구현한다. 해당 인터페이스는 다음과 같이 포맷터와 컨버터를 사용할 수 있게 구성되어 있다.
+<img width="612" alt="image" src="https://user-images.githubusercontent.com/66772624/219323917-45cbe664-83a8-49e7-b257-5c32de753859.png">
+
+스프링 부트는 DefaultFormattingConversionService를 상속받는 WebConversionService를 내부에서 사용한다.
+<img width="1800" alt="image" src="https://user-images.githubusercontent.com/66772624/219329961-5f592328-15cb-4d3c-bc06-0686d3dca437.png">
