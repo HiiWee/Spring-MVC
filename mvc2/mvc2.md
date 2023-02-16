@@ -2952,3 +2952,22 @@ DefaultFormattingConversionService는 FormattingConversionService 인터페이�
 
 스프링 부트는 DefaultFormattingConversionService를 상속받는 WebConversionService를 내부에서 사용한다.
 <img width="1800" alt="image" src="https://user-images.githubusercontent.com/66772624/219329961-5f592328-15cb-4d3c-bc06-0686d3dca437.png">
+
+<br><br>
+
+## [포맷터 적용하기]
+포맷터를 적용할때는 컨버터와 동일하게 적용할 수 있다. (WebConfig의 addFormatters 메소드에서 addFormatter로 추가할 수 있다.)
+
+이떄 StringToInteger 및 IntegerToString 컨버터를 등록한 부분을 등록하지 않도록 주석처리하는데
+우리가 생성한 MyNumberFormatter와 동일하게 문자 -> 숫자 변환 혹은 반대 변환을 하기 때문인데 이런 경우에는 컨버터가 더 높은 우선순위를 갖기에 주석처리한다.
+
+### 컨트롤러에서 확인
+<img width="749" alt="image" src="https://user-images.githubusercontent.com/66772624/219334880-5ab1acc9-dc03-4576-98fb-fa5cd6dbfe3f.png">
+
+위의 컨트롤러를 실행하면 기존 StringToInteger 컨버터가 아닌 MyNumberFormatter가 동작하므로 다음과 같이 포맷팅되어 출력된다.
+
+<img width="402" alt="image" src="https://user-images.githubusercontent.com/66772624/219335138-1aa11e5e-24b2-415e-aaed-96f04cc5c49e.png">
+
+또한 다음 컨트롤러에서 파라미터로 10,000을 넘기게 되어도 포맷터가 정상 동작한다.
+<img width="439" alt="image" src="https://user-images.githubusercontent.com/66772624/219335261-08b50831-d39c-4add-bf76-41684f196d0a.png">
+<img width="1002" alt="image" src="https://user-images.githubusercontent.com/66772624/219335395-67f6c750-6256-465f-acbd-3cb348bc7040.png">
