@@ -3048,3 +3048,11 @@ Form2에 다음과 같이 `@JsonFormat`을 붙여주고 다시한번 위의 POST
 
 반대로 응답을 주는 부분에서도 포맷팅을 지정하면 기본 응답인 `2023-02-16T21:22:47.456561`이 아니라 `2023-02-16 21:22:47`와 같이 응답하게 된다.
 ![image](https://user-images.githubusercontent.com/66772624/219367297-e088111a-a508-4be8-8386-b8f27105bd8f.png)
+
+<br><br>
+
+## [정리]
+메시지 컨버터(`HttpMessageConverter`)에는 ConversionService가 적용되지 않음
+JSON결과로 만들어지는 숫자, 날짜 포맷 변경을 원하면 Jackson 라이브러리가 제공하는 설정에 포맷을 지정해야 한다.
+
+ConversionService는 `@RequestParam`, `@ModelAttribute`, `@PathVariable`, `뷰 템플릿`에서 사용된다.
