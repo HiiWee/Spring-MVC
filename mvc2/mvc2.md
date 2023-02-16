@@ -2971,3 +2971,80 @@ DefaultFormattingConversionService는 FormattingConversionService 인터페이�
 또한 다음 컨트롤러에서 파라미터로 10,000을 넘기게 되어도 포맷터가 정상 동작한다.
 <img width="439" alt="image" src="https://user-images.githubusercontent.com/66772624/219335261-08b50831-d39c-4add-bf76-41684f196d0a.png">
 <img width="1002" alt="image" src="https://user-images.githubusercontent.com/66772624/219335395-67f6c750-6256-465f-acbd-3cb348bc7040.png">
+
+<br><br>
+
+## [스프링이 제공하는 기본 포맷터]
+스프링은 다양한 포맷터를 기본적으로 제공한다.
+
+포맷터의 기본형식이 아닌 원하는 형식을 지정해서 사용할 수 있는 방법으로 어노테이션 기반 방법이 존재한다.   
+실제 개발을 하다보면 날짜 및 시간이나 숫자에 대한 포맷팅이 필요한데 어노테이션을 이용해 간단하게 지정할 수 있다.
+
+<img width="526" alt="image" src="https://user-images.githubusercontent.com/66772624/219346883-a3a4bbe4-1d7e-4bbc-8277-392bde8b353c.png">
+
+Form 클래스를 보면 @NumberFormat, @DateTimeFormat이 보인다. 이것이 실제 포맷터에 대한 포맷팅을 어노테이션으로 설정하는 것이다.   
+
+`GET /formatter/edit` Integer -> String 및 LocalDateTime -> String 포맷팅이 완료됨
+
+<img width="280" alt="image" src="https://user-images.githubusercontent.com/66772624/219347263-03786794-7b11-464a-9a8a-59e459b6edeb.png">
+
+`POST /formatter/edit` String -> Integer 및 String -> LocalDateTime으로 포맷팅 된다.
+<img width="369" alt="image" src="https://user-images.githubusercontent.com/66772624/219347305-a474ed1f-83ef-41b5-9a38-9429bc0bbea8.png">
+
+> 포맷터 인터페이스를 보면 알겠지만, print 및 parser 메소드를 오버라이딩 하므로 a -> b 포맷팅이 된다면 b -> a 포맷팅도 가능하다.
+
+
+### 추가 API 통신에서 Formatting?
+<img width="493" alt="image" src="https://user-images.githubusercontent.com/66772624/219363984-989f2077-44f8-4368-946d-2f8b3490f566.png">
+
+위와 같은 Form2 클래스를 이용해 api 통신에서의 Formatting이 이루어지는지 확인해보자
+
+`GET /api/formatter/edit`
+
+- 결과
+  ```json
+  # 기대결과
+  {
+    "number": "10,000",
+    "localDateTime": "2023-02-16 21:22:47"
+  }
+  # 실제 결과
+  {
+  "number": 10000,
+  "localDateTime": "2023-02-16T21:22:47.456561"
+  }
+  ```
+
+`POST /api/formatting/edit`   
+```json
+body
+{
+  "number": 10000,
+  "localDateTime": "2023-02-16T21:22:47.456561"
+}
+```
+- 결과
+  ```json
+  # 기대 결과
+  {
+    "number": "10,000",
+    "localDateTime": "2023-02-16 21:22:47"
+  }
+  # 실제 결과
+  {
+  "number": 10000,
+  "localDateTime": "2023-02-16T21:22:47.456561"
+  }
+  ```
+  
+결과적으로 Formatting의 적용이 되지 않는 모습이다. 하지만 `@JsonFormat`을 이용한다면 JSON 데이터에 날짜 및 시간에 대한 포맷팅을 적용할 수 있다.
+<img width="425" alt="image" src="https://user-images.githubusercontent.com/66772624/219366023-a4769ef0-bc2f-4673-a5bb-93fa3079af8f.png">
+
+Form2에 다음과 같이 `@JsonFormat`을 붙여주고 다시한번 위의 POST를 요청하게 되면 Json Parse Error가 발생한다.      
+이유는 `@JsonFormat`의 경우 이미 변환되어 있는 데이터를 해당 포맷에 맞게 담거나, 담겨 있는 데이터를 해당 포맷에 맞게 응답하기 때문이다.
+
+즉, `2023-02-16T21:22:47.456561`과 같은 형식을 `2023-02-16 21:22:47`와 같이 변환 하기는 어렵지만, 해당 변환할 포맷을 미리 @JsonFormat으로 붙여놓으면   
+`2023-02-16 21:22:47` 방식을 `localDateTime` 변수에 담을 수 있게 된다.
+
+반대로 응답을 주는 부분에서도 포맷팅을 지정하면 기본 응답인 `2023-02-16T21:22:47.456561`이 아니라 `2023-02-16 21:22:47`와 같이 응답하게 된다.
+![image](https://user-images.githubusercontent.com/66772624/219367297-e088111a-a508-4be8-8386-b8f27105bd8f.png)
