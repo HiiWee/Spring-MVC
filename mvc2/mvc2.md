@@ -2907,5 +2907,31 @@ StringToIpPortConverter의 동작이 이루어지게 된다.
 2023-02-15 02:15:18.640  INFO 91738 --- [nio-8080-exec-7] h.t.converter.IpPortToStringConverter    : convert source=hello.typeconverter.type.IpPort@59cb0946
 2023-02-15 02:15:21.911  INFO 91738 --- [nio-8080-exec-9] h.t.converter.StringToIpPortConverter    : convert source=127.0.0.1:8080
 2023-02-15 02:15:21.913  INFO 91738 --- [nio-8080-exec-9] h.t.converter.IpPortToStringConverter    : convert source=hello.typeconverter.type.IpPort@59cb0946
-
 ```
+
+<br><br>
+
+## [포맷터 Formatter]
+Converter는 입력 출력 타입에 제한이 없는, 범용 타입 변환기능을 제공한다.   
+하지만 주로 문자 -> 타입 변환 혹은 타입 -> 문자 변환의 상황이 주가 되는 입장에선 컨버터는 더 많은 기능을 제공한다.   
+이런 점을 조금 간편하게 지원하는 Formatter가 존재한다.
+
+### Formatter
+금액과 같은 입력에서 1000 -> "1,000"으로 출력하거나 반대의 상황,   날짜 객체를 문자로 변환하는 역할은 포맷터가 맡고있다.   
+추가적으로 Locale과 같은 나라 정보를 추가하면 현지 정보를 다룰 수 있다.
+
+결국 Converter는 객체 to 객체의 역할을 Formatter는 문자 -> 객체 혹은 반대상황의 역할을 맡는 Converter의 특별한 버전이라고 생각할 수 있다.
+
+Formatter 인터페이스는 Printer와 Parser 인터페이스를 상속받는데 이는 각각 객체 -> 문자 변환과 문자 -> 객체 변환의 역할을 한다.
+
+### CustomFormatter: MyNumberFormatter
+<img width="715" alt="image" src="https://user-images.githubusercontent.com/66772624/219311639-afd129a4-6eb8-4b69-ac84-3c1fddb6939a.png">
+위와 같은 포맷터는 다음과 같이 사용할 수 있다.
+
+<img width="562" alt="image" src="https://user-images.githubusercontent.com/66772624/219312021-fa60e181-4287-4136-a166-0fbaa9355976.png">
+
+> **참고**   
+> 스프링은 다양한 포맷터를 용도에 따라 제공한다.
+> `Formatter`: 포맷터
+> `AnnotationFormatterFactory`: 필드 타입, 애노테이션 정보를 활용할 수 있는 포맷터    
+> **공식문서**: https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#format
