@@ -3162,3 +3162,29 @@ Y  Ð  
 멀티파트로 전송하게 되면 스프링의 `DispatcherServlet`에서 `MultipartResolver`를 실행한다. 실제 DispatcherServlet의 `doDispatch()` 메소드에서
 `checkMultipart()` 메소드의 실행부분을 디버깅해보면 다음과 같이 MultipartResolver를 구현한 `StandardServletMultipartResolver`에서 `StandardMultipartHttpServletRequest`객체를 만들어 반환한다.
 ![image](https://user-images.githubusercontent.com/66772624/219640543-6d8620b4-f3ff-479a-9961-58916de9309f.png)
+
+<br><br>
+
+## [서블릿과 파일 업로드2]
+이전 시간에 파일을 전송하고 로그를 찍었던 POST Controller 부분에 다음과 같이 코드를 추가한다.
+<img width="787" alt="image" src="https://user-images.githubusercontent.com/66772624/219647684-a66050de-bb97-408b-8ded-bfad2b42c43c.png">
+
+추가된 부분은 각 part를 돌면서 `이름`, `헤더`, `Content-Disposition` 포함 헤더 및 실제 데이터를 읽어와 우리가 지정한 경로에 파일을 저장한다.
+
+fileDir은 application.properties에서 지정할 수 있다.   
+`file.dir=/Users/ihoseok/develop/tools/file/` 이후 @Value(${file.dir})을 통해 해당 값을 불러올 수 있다.
+
+### Part의 주요 메서드들
+1. part.getSubmittedFileName(): 클라이언트가 전달한 파일명
+2. part.getInputStream(): Part의 전송 데이터를 읽을 수 있다.
+3. part.write(String path): Part를 통해 전송된 데이터를 저장할 수 있다.
+
+### 브라우저를 통해 전송한 데이터 로그
+<img width="579" alt="image" src="https://user-images.githubusercontent.com/66772624/219649358-36d4af9e-9f2c-4a59-a2bc-f489bba29c08.png">
+
+위와 같이 데이터를 전송하게 되면 다음과 같은 로그가 찍힘을 알 수 있다.
+
+<img width="1674" alt="image" src="https://user-images.githubusercontent.com/66772624/219649458-1b4b6c8f-43da-4781-958b-af8621d7885d.png">
+
+더하여 서블릿이 제공하는 Part도 편리하지만 HttpServletRequest에 의존하게 되며, 파일 부분을 구현하는 코드의 양이 꽤 많다.   
+스프링을 사용하면 이런 부분들을 대폭 줄일 수 있다.
