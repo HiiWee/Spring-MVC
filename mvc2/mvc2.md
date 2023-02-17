@@ -3075,3 +3075,90 @@ ConversionService는 `@RequestParam`, `@ModelAttribute`, `@PathVariable`, `뷰 �
 따라서 이들을 multi part라고 부른다.
 
 여러개의 복잡한 part가 존재하는 HTTP 메시지를 어떻게 사용할까?
+
+<br><br>
+
+## [서블릿과 파일 업로드1]
+<img width="260" alt="image" src="https://user-images.githubusercontent.com/66772624/219634343-a9762af8-7dfd-41bd-b435-28afb1993763.png">
+
+위와 같이 파일을 전송하기 위해서는 form 태그에 enctype을 "multipart/form-data"로 지정해주어야 한다.
+
+컨트롤러 코드는 다음과 같다.
+![image](https://user-images.githubusercontent.com/66772624/219634919-b98e40d6-d778-40c3-b385-e81e16ec65db.png)
+
+받아온 폼 데이터 및 파일 데이터를 로그로 찍는데 request.getParts()는 실제 multipart/form-data 전송 방식에서 각각 나누어진 부분을 받아서 확인할 수 있다.
+여기서는 2개가 올것을 예상할 수 있다.
+
+### application.properties에서 HTTP 요청 메시지 보이도록 설정
+`logging.level.org.apache.coyote.http11=debug`
+
+실제 requeste를 보면 다음과 같다.
+```
+Received [POST /servlet/v1/upload HTTP/1.1
+Host: localhost:8080
+Connection: keep-alive
+Content-Length: 290
+Cache-Control: max-age=0
+sec-ch-ua: "Not_A Brand";v="99", "Google Chrome";v="109", "Chromium";v="109"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "macOS"
+Upgrade-Insecure-Requests: 1
+Origin: http://localhost:8080
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryNASNHHrqfM800BHQ
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Referer: http://localhost:8080/servlet/v1/upload
+Accept-Encoding: gzip, deflate, br
+Accept-Language: ko,en-US;q=0.9,en;q=0.8,ja;q=0.7
+Cookie: Idea-5ba2b975=4d2b9ec8-6fb6-4ef5-b682-bb1b965ac1d0
+
+------WebKitFormBoundaryNASNHHrqfM800BHQ
+Content-Disposition: form-data; name="itemName"
+
+ìíB
+------WebKitFormBoundary8mSgBeXcRgcWL3at
+Content-Disposition: form-data; name="file"; filename="áá¬áá©áá©á¨ áá¥á·áá¦ááµá¯.001.jpeg"
+Content-Type: image/jpeg
+
+ÿØÿà JFIF   H H  ÿá @Exif  MM *   i                          8    ÿí 8Photoshop 3.0 8BIM      8BIM%     ÔÙ ²é	ìøB~ÿâ(ICC_PROFILE   appl   mntrRGB XYZ æ        acspAPPL    APPL                  öÖ     Ó-applìý£8GÃm´½OzÚ/                               
+desc   ü   0cprt  ,   Pwtpt  |   rXYZ     gXYZ  ¤   bXYZ  ¸   rTRC  Ì    chad  ì   ,bTRC  Ì    gTRC  Ì    mluc          enUS       D i s p l a y   P 3mluc          enUS   4    C o p y r i g h t   A p p l e   I n c . ,   2 0 2 2XYZ       öÕ     Ó,XYZ       ß  =¿ÿÿÿ»XYZ       J¿  ±7  
+Y  Ð  
+[sf32     B  Þÿÿó&    ýÿÿû¢ÿÿý£  Ü  ÀnÿÀ 8 ÿÄ           	
+ÿÄ µ   } !1AQa"q2#B±ÁRÑð$3br	
+%&'()*456789:CDEFGHIJSTUVWXYZcdefghijstuvwxyz¢£¤¥¦§¨©ª²³´µ¶·¸¹ºÂÃÄÅÆÇÈÉÊÒÓÔÕÖ×ØÙÚáâãäåæçèéêñòóôõö÷øùúÿÄ        	
+ÿÄ µ  w !1AQaq"2B¡±Á	#3RðbrÑ
+$4á%ñ&'()*56789:CDEFGHIJSTUVWXYZcdefghijstuvwxyz¢£¤¥¦§¨©ª²³´µ¶·¸¹ºÂÃÄÅÆÇÈÉÊÒÓÔÕÖ×ØÙÚâãäåæçèéêòóôõö÷øùúÿÛ C ÿÛ CÿÝ  ðÿÚ   ? þ!ëØ<ð 
+ (  
+ (  
+ (  
+
+
+
+------WebKitFormBoundaryNASNHHrqfM800BHQ--
+]
+```
+이렇게 단순 form 데이터와 파일데이터가 동시에 전송됨을 알 수 있다.
+
+### 멀티 파트 관련 application.properties 설정
+1. 업로드 사이즈 제한
+   ```
+   spring.servlet.multipart.max-file-size=1MB # 파일 하나의 최대 사이즈 설정
+   spring.servlet.multipart.max-request-size=10MB # 멀트파트 요청 하나에 여러 파일 업로드시 전체 합 사이즈 설정
+   ```
+2. 멀티파트 전송 끄고 켜기   
+   멀티 파트 전송은 기본 application/x-www-form-urlencoded보다 복잡하므로 옵션으로 관련된 처리를 하도록하거나 하지 못하도록 설정할 수 있다.
+   ```
+   spring.serlvet.multipart.enabled=false # 기본은 켜기임 (true)
+   ```
+
+### 멀티파트 전송시 Request 객체
+기본 form 데이터에서 Request 객체는 RequestFacade의 인스턴스이다. 하지만 multipart 전송을 하게되면 StandardMultipartHttpServletRequest
+인스턴스가 기본 Request 객체로 들어옴을 알 수 있다.
+
+멀티파트로 전송하게 되면 스프링의 `DispatcherServlet`에서 `MultipartResolver`를 실행한다. 실제 DispatcherServlet의 `doDispatch()` 메소드에서
+`checkMultipart()` 메소드의 실행부분을 디버깅해보면 다음과 같이 MultipartResolver를 구현한 `StandardServletMultipartResolver`에서 `StandardMultipartHttpServletRequest`객체를 만들어 반환한다.
+![image](https://user-images.githubusercontent.com/66772624/219640543-6d8620b4-f3ff-479a-9961-58916de9309f.png)
