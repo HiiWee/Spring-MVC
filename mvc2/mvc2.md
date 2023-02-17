@@ -3056,3 +3056,22 @@ Form2에 다음과 같이 `@JsonFormat`을 붙여주고 다시한번 위의 POST
 JSON결과로 만들어지는 숫자, 날짜 포맷 변경을 원하면 Jackson 라이브러리가 제공하는 설정에 포맷을 지정해야 한다.
 
 ConversionService는 `@RequestParam`, `@ModelAttribute`, `@PathVariable`, `뷰 템플릿`에서 사용된다.
+
+<br><br>
+# <파일 업로드>
+## [파일 업로드 소개]
+폼 데이터를 전송하는 방식은 2가지가 존재한다.
+
+### application/x-www-form-urlencoded 방식
+폼 데이터를 서버로 전송하는 기본적인 방식으로 헤더에 `Content-Type: application/x-www-form-urlencoded`가 추가된다.
+
+폼 데이터는 Http Body에 문자로 전송되며 username=kim&age=20과 같이 &로 구부하여 전송된다.
+
+### multipart/form-data 방식
+<img width="801" alt="image" src="https://user-images.githubusercontent.com/66772624/219600278-d6c695d3-80ee-464c-88d3-d9cf3d532649.png">
+
+해당 방식은 다른 종류의 여러 파일과 폼 데이터를 같이 전송할 수 있다. 해당 방식을 사용하기 위해서는 form에 별도의 속성인 enctype을 지정한다.   
+또한 Content-Type의 boundary=---xxx와 같은 문자로 각 폼의 데이터가 구분되며 각 폼은 Content-Disposition 항목별 헤더가 존재해 이를 통해 폼 데이터인지, 파일 데이터인지 구분할 수 있다. 
+따라서 이들을 multi part라고 부른다.
+
+여러개의 복잡한 part가 존재하는 HTTP 메시지를 어떻게 사용할까?
