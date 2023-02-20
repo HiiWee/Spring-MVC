@@ -1500,3 +1500,65 @@ HttpServletRequest에서 직접 가져오지 않고 @RequestParam을 통해 Mult
 
 ### @ModelAttribute를 통해 MultipartFile 주입받기
 <img width="633" alt="image" src="https://user-images.githubusercontent.com/66772624/220066297-8c4b2647-33d4-45bc-815e-70a679434af3.png">
+
+<br><br>
+
+## [예제로 구현하는 파일 업로드, 다운로드]
+### 요구사항
+- 상품을 관리 
+  - 상품 이름
+  - 첨부파일 하나
+  - 이미지 파일 여러개
+- 첨부파일을 업로드 다운로드 할 수 있다.
+- 업로드한 이미지를 웹 브라우저에서 확인할 수 있다.
+
+### 상품을 관리
+> 첨부 파일을 저장하기에 앞서서 중요한 사실이 있다. 파일은 주로 데이터베이스에 저장하지 않고 `스토리지`에 저장한다. (ex: AWS S3)   
+따라서 DB에는 파일을 저장한 경로를 저장함 (FullPath를 다 하진 않고, 어딘가에 기본적으로 맞춰놓고 이후 상대적인 경로만 저장한다)
+
+- 클라이언트에서 받아오는 ItemForm   
+    ![image](https://user-images.githubusercontent.com/66772624/220178349-ced59b69-6105-46ae-96e5-abf853467934.png)
+
+- 실제 DB 저장용 Item   
+    ![image](https://user-images.githubusercontent.com/66772624/220178574-0c04f3ee-f960-48fc-b68f-e9d3b03d0fa1.png)
+
+- 첨부파일이 실제 저장될때는 업로드한 파일명과 구분되고 중복을 방지하기 위해 다르게 저장한다.   
+    ![image](https://user-images.githubusercontent.com/66772624/220178852-afd65602-a533-4fe2-9120-c5e28fa38b9f.png)
+
+### 첨부파일 및 여러 이미지 업로드
+
+- 첨부파일 업로드   
+    ![image](https://user-images.githubusercontent.com/66772624/220179016-2585b5f2-619d-447c-9846-e4fe7fce77eb.png)
+
+    FileStore 객체에게 파일을 저장하는 로직일 위임하고, 파일의 첨부 이름, 실제 저장이름을 가진 UploadFile 객체를 생성하고, Item을 저장한다.
+
+
+- FileStore 로직
+  ![image](https://user-images.githubusercontent.com/66772624/220179489-350c8c14-900a-4e61-8d1e-97a1ea6bc919.png)
+
+   storeFile 메소드가 핵심이다. 결국 fullPath 경로에 실제 파일인 MultipartFile이 업로드되고, 반환은 UploadFile객체가 반환된다.
+
+
+### 첨부파일 다운로드 및 이미지 확인
+![image](https://user-images.githubusercontent.com/66772624/220180349-20a0e211-2ed1-4e45-8fae-9d9355fd6c48.png)
+
+첨부파일 업로드 이후 `/item/{id}`으로 리다이렉트 됐다. 여기서는 실제 저장된 item을 모델에 담고 반환한다.
+
+
+**첨부 파일 업로드**
+- **item-view.html**
+    ![image](https://user-images.githubusercontent.com/66772624/220180580-f1ec4061-27ef-4b30-ac63-90923bb7cea6.png)
+    <img width="245" alt="image" src="https://user-images.githubusercontent.com/66772624/220180762-bcdb8f4d-9b8a-48ad-9354-bf43521b401a.png">
+
+    하이퍼링크로 /attach/${item.id}를 호출한다 따라서 클릭하게 되면 첨부파일에 대한 다운로드가 진행되어야 한다.
+
+다시 컨트롤러에서 `/attach/{itemId}`를 호출하는 컨트롤러를 보면 `fullPath`를 가져와서 UriResource를 통해 실제 해당 위치의 리소스를 가져온다.   
+이후 사용자가 업로드한 파일 이름으로 보이도록 인코딩한 후 `Content-Disposition` 헤더에 파일 이름을 저장하고 바디에는 리소스를 응답해   
+사용자가 링크를 누르면 다운로드 할 수 있도록 한다.
+
+> 추가적으로 itemId로 조회하게 되면 사용자의 권한이 필요한 경우 해당 id값을 db에 조회해 권한 확인 후 조회할 수 있게 기능을 추가할 수 있다.
+
+**이미지 확인**
+html코드에서 img를 보면 th:src부분에 `/images/${imageFile.getStoreFileName()}`을 호출한다. 컨트롤러에선 해당 fullpath에 존재하는 UriResource를 응답하여 이미지를 볼 수 있게한다.
+
+> 이미지 확인은 단순하게 리소스만 응답했지만, 실제라면 특정 권한을 체크하는 로직이 추가될 수 도 있다.
