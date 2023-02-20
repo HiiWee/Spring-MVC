@@ -3188,3 +3188,19 @@ fileDir은 application.properties에서 지정할 수 있다.
 
 더하여 서블릿이 제공하는 Part도 편리하지만 HttpServletRequest에 의존하게 되며, 파일 부분을 구현하는 코드의 양이 꽤 많다.   
 스프링을 사용하면 이런 부분들을 대폭 줄일 수 있다.
+
+<br><br>
+
+## [스프링과 파일 업로드]
+스프링은 파일 업로드를 MultipartFile이라는 인터페이스로 쉽게 제공해준다.
+
+![image](https://user-images.githubusercontent.com/66772624/220063839-a4bd0224-4a55-4639-aecb-36df8e4d3ba9.png)
+
+HttpServletRequest에서 직접 가져오지 않고 @RequestParam을 통해 MultipartFile을 직접 주입받아서 사용할 수 있다.
+이후 저장할 fullPath에 transferTo() 메서드를 이용해 파일을 저장한다.
+
+> @RequestParam뿐만 아니라 @ModelAttribute에서도 MultipartFile을 주입받을 수 있다.   
+> 서블릿을 직접 이용하기보단 이렇게 파일을 직접 주입받게되면 훨씬 코드의 양이 줄어들고 명료해진다.
+
+### @ModelAttribute를 통해 MultipartFile 주입받기
+<img width="633" alt="image" src="https://user-images.githubusercontent.com/66772624/220066297-8c4b2647-33d4-45bc-815e-70a679434af3.png">
